@@ -1,0 +1,32 @@
+Package: gleanr
+Title: GWAS latent embeddings accounting for noise and regularization
+Version: 0.0.0.9000
+Authors@R: 
+    person("Ashton", "Omdahl", , "aomdahl1@jhu.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5617-9589"))
+Description: Perform sparse factorization of GWAS summary statistics via alternating least squares while accounting for uncertainty in effect sizes estimates and non-independent samples.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    coop,
+    data.table,
+    doParallel,
+    dplyr,
+    elasticnet,
+    foreach,
+    glmnet,
+    irlba,
+    logr,
+    magrittr,
+    penalized,
+    plyr,
+    RcppArmadillo,
+    RcppEigen,
+    stringr,
+    svMisc,
+    tidyr
