@@ -16,3 +16,6 @@ Our approach was inspired by work from Yuan He [here](https://github.com/heyuan7
 
 ## Running GLEANR
 Tutorials and vignettes will be posted within the next month. If you'd like to try `gleanr` in the meantime, use the script `src/gleaner_run.R` available in the [gleanr_workflow repository](https://github.com/aomdahl/gleanr_workflow) after installing this package to run analysis directly on input matrices of summary statistics.
+
+## Development versions of gleanr (preceeding Nov 2024)
+To review development versions of gleanr prior to the reorgnization of this github in Nov. 2024, please see the `gleanr_source_backup` directory in the [gleanr_workflow repositor](https://github.com/aomdahl/gleanr_workflow/tree/main/gleanr_source_backup).
