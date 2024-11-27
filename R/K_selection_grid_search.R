@@ -296,7 +296,6 @@ storeGridResults <- function(gs_object, curr_grid=NULL)
 #
 getBestRun <- function(gs_object, curr_best = NULL)
 {
-  #$$todo
   # Instead of just looking at the best score, we need to rescale all to be on the same variance scale.
   #Do this by getting the fit.scalar for the object with the largest K across the set under consideration
   #then get new BIC scores for each with fit.term/global.fit.scalar + df.term + addends
@@ -304,8 +303,6 @@ getBestRun <- function(gs_object, curr_best = NULL)
   #They also contain ebic
   #consider just dropping this
   #From all of these rescaled BIC terms, pick the one that minimizes
-  #make sure to test in zou case:
-  #we pick a terrible zou because it is scaled to look good even though its terrible.
   #list("bic.list" = BIC,
   #     "fit.term" = deviance(fit),
   #     "df.term"=  log(n)*k,

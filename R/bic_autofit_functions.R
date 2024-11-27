@@ -409,7 +409,8 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   #options("logr.compact" = TRUE)
   #options("logr.notes" = FALSE)
   #Read in the hyperparameters to explore
-  hp <- readInParamterSpace(args)
+  #hp <- readInParamterSpace(args)
+  hp <- NA
   all_ids <-snp.ids; names <- trait.names
   initk <- option$K
   if(initk == 0)
