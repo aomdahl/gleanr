@@ -1,5 +1,15 @@
 #Helper functions for reading in and parseing code.
 #TODO: develop some testing cases for each of these
+#' Function to sort by lead column
+#'
+#' @param tab to sort
+#' @param option option vector, where sort is specified
+#' @param col which column to sort by
+#'
+#' @return sorted table
+#' @export
+#'
+#' @examples
 quickSort <- function(tab, option, col = 1)
 {
   if(!option$sort)
@@ -12,6 +22,14 @@ quickSort <- function(tab, option, col = 1)
 }
 
 
+#' Prepare possible parameter space for lasso sparsity parametsr
+#'
+#' @param args  list of arguments
+#'
+#' @return initial alphas and lambdas
+#' @export
+#'
+#' @examples
 readInParamterSpace <- function(args)
 {
   #Read in the hyperparameters to explore
@@ -56,9 +74,20 @@ cleanUp <- function(matin, type = "beta")
   return(matrix(lister, nrow = nrow(matin)))
 }
 
-#Zero out NA and extreme chi2
-#Param X, W
-#Return list with cleanX, cleanW
+
+#' Clean up input GWAS data, including extreme X^2 values and entries with too many NAs
+#' TODO: add inheritance for some of these arguments
+#' @param X
+#' @param W
+#' @param id.list
+#' @param na_thres
+#' @param is.sim
+#' @param na.threshold
+#'
+#' @return a list of updated input items (X,W,id.list) reflecting the drops/filtering
+#' @export
+#'
+#' @examples
 matrixGWASQC <- function(X, W, id.list, na_thres = 0.5, is.sim = FALSE, na.threshold=0.7)
 {
   #Now that we have the SE and the B, go ahead and filter out bad snps....
