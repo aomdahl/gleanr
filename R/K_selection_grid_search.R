@@ -41,15 +41,6 @@ gridSearchK <- function(opath, option,X,W,W_c,all_ids,names,step.limit = 8,init.
   #optimizeK <- function(K, opath, option, X_in, W_in, W_c, all_ids, names, reg.vect,...)
   init.results <- gridSearch(as.list(init.params$K), option$ncores, opath, option, X, W, W_c, all_ids, names,...)
 
-  #init.results <- paramtest::grid_search(optimizeK, params = init.params, n.iter = 1 , boot = FALSE, bootParams = NULL, parallel = parallel, ncpus = option$ncores,
-  #                                       opath = opath,
-  #                                       option = option,
-  #                                       X_in = X,
-  #                                       W_in = W,
-  #                                       W_c = W_c,
-  #                                       all_ids = all_ids,
-  #                                       names = names)
-
   grid.search.record <- gridSearchRecord(init.results, init.params,  NULL)
   sdv <- gatherSearchData(init.results,k.range,grid.search.record)
 
@@ -68,16 +59,7 @@ gridSearchK <- function(opath, option,X,W,W_c,all_ids,names,step.limit = 8,init.
   {
     #Keep looking
     next.grid <- gridSearch(as.list(sdv$next_params$K), option$ncores, opath, option, X, W, W_c, all_ids, names,...)
-    #next.grid <- paramtest::grid_search(optimizeK, params = sdv$next_params, n.iter = 1 , boot = FALSE, bootParams = NULL,
-    #                                    parallel = parallel, ncpus =option$ncores,
-    #                                    opath = opath,
-    #                                    option = option,
-    #                                    X_in = X,
-    #                                    W_in = W,
-    #                                    W_c = W_c,
-    #                                    all_ids = all_ids,
-    #                                    names = names)
-    #New paradigm- we need this to update off the full list
+
     grid.search.record <- gridSearchRecord(next.grid, sdv$next_params, grid.search.record) #use this last entry in the search
     sdv <- gatherSearchData(next.grid,k.range,grid.search.record, curr_grid=sdv$query_matrix,curr_best = sdv$min_result ) #need previous dat here: UPDATE
     if(sdv$next_params$terminate)
@@ -91,13 +73,6 @@ gridSearchK <- function(opath, option,X,W,W_c,all_ids,names,step.limit = 8,init.
     }
 
     save(sdv,grid.search.record, file = paste0(opath, "_K_search.RData"))
-  #query.matrix <- storeGridResults(next.grid, curr_grid=query.matrix)
-  #min.result <- getBestRun(next.grid,curr_best = min.result)
-  #For the next iteration:
-  #curr_best_K = query.matrix$K[which.min(query.matrix$BIC)]
-  #next.params <- chooseNextParams(curr_best_K,query.matrix,k.range)
-  #check we aren't looking at super close things
-  #k.diff = checkK(c(curr_best_K,next.params$K))
   }
   #save(sdv, file="/scratch16/abattle4/ashton/DEBUG.RData")
   save(sdv,grid.search.record, file = paste0(opath, "_K_search.RData"))
@@ -294,24 +269,18 @@ storeGridResults <- function(gs_object, curr_grid=NULL)
   ret
 }
 #
+
+#' Identify the run that minimizes the BIC
+#'
+#' @param gs_object list object containing gleanr information (tests) and a table of the corresponding BIC performance metrics (results)
+#' @param curr_best specifies which BIC score is curently the minimum; NULL if none yet
+#'
+#' @return the new best BIC score
+#' @export
+#'
+#' @examples
 getBestRun <- function(gs_object, curr_best = NULL)
 {
-  # Instead of just looking at the best score, we need to rescale all to be on the same variance scale.
-  #Do this by getting the fit.scalar for the object with the largest K across the set under consideration
-  #then get new BIC scores for each with fit.term/global.fit.scalar + df.term + addends
-  #Note that for sklearn, the addends will be problematic since they are subject to the sse of that calculation.
-  #They also contain ebic
-  #consider just dropping this
-  #From all of these rescaled BIC terms, pick the one that minimizes
-  #list("bic.list" = BIC,
-  #     "fit.term" = deviance(fit),
-  #     "df.term"=  log(n)*k,
-  #     "fit.scaler"=1,
-  #     "addends" =0)
-
-  #min_i <- which.min(sapply(gs_object$results, function(x) x$min.dat$min_sum))
-  #Its possible that there are matching minimums.
-  #In this case, choose the one that has the smaller Kinit score
   find_min_of <- getGlobalBICSum(gs_object$results)
   min_i = which(find_min_of == min(find_min_of, na.rm = TRUE))
   if(length(min_i) > 1)

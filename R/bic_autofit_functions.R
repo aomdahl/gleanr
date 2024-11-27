@@ -656,7 +656,7 @@ extractMinBicDat <- function(bic.dat, min.index)
 #'
 #' @param option list of runtime options
 #' @param X NxM matrix of SNP effect sizes
-#' @param W
+#' @param W uncertainty weights (1/SE), same dimensions as X
 #' @param W_c
 #' @param optimal.init V at which to initialize the run, typically the output from a model selection step
 #' @param maxK specify how many K max to include. Factors will be removed if they exceed this.
@@ -779,12 +779,23 @@ gleaner <- function(X,W, snp.ids, trait.names, C = NULL, K=0, gwasmfiter =5, rep
   ret
 }
 
-#####
-#Version optimized for glmnet
-#####MAJOR TODO:
-## IMPLEMENT  better convergence response [X]
 
 
+#' Main wrapper for launching gleanr using glmnet package
+#'
+#' @param opath - output path for writing the
+#' @param option - argument vector of options
+#' @param X NxM matrix of SNP effect sizes
+#' @param W uncertainty weights (1/SE), same dimensions as X
+#' @param W_c MxM transformation matrix to adjust for confounding covariance
+#' @param all_ids list of SNP ids, order corresponds to rows of X
+#' @param names list of trait names, order corresponds to columns of X
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
 getBICMatricesGLMNET <- function(opath,option,X,W,W_c, all_ids, names, ...)
 {
 
@@ -802,8 +813,22 @@ getBICMatricesGLMNET <- function(opath,option,X,W,W_c, all_ids, names, ...)
 #########
 #function(K, opath, option, X_in, W_in, W_c, all_ids, names, reg.vect,...)
 #  bic.dat <- getBICWorkhorse(opath, option, X_in, W_in, W_c, all_ids, names, ...)
+#' Title
+#'
+#' @inheritParams getBICMatricesGLMNET
+#' @param min.iter minimum number of model fitting iterations to require
+#' @param max.iter maxiumum number of model fitting iterations to allow
+#' @param burn.in.iter deprecated argument
+#' @param init.mat initialization matrix to use, default is none
+#' @param rg_ref
+#' @param reg.elements list of pre-transformed regression elements for convenience
+#'
+#' @return
+#' @export
+#'
+#' @examples
 getBICWorkhorse <- function(opath,option,X,W,W_c, all_ids, names, min.iter = 5, max.iter = 100, burn.in.iter = 0,
-                            init.mat = NULL, rg_ref=NULL,reg.elements=NULL,INCR.LIMIT=3)
+                            init.mat = NULL, rg_ref=NULL,reg.elements=NULL)
 {
   W_ld = NULL
   conv.options <- list()
