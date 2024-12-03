@@ -22,6 +22,8 @@ gwasML_ALS_Routine(
 
 \item{X}{NxM matrix of SNP effect sizes}
 
+\item{W}{uncertainty weights (1/SE), same dimensions as X}
+
 \item{optimal.init}{V at which to initialize the run, typically the output from a model selection step}
 
 \item{maxK}{specify how many K max to include. Factors will be removed if they exceed this.}
