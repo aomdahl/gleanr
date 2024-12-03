@@ -394,11 +394,13 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   {
     warning("Columns of standard errors contain no variance. May not be valid")
   }
-
+  print(K)
   message("This is an archaic initialization; recommend doing away with this...")
   args <- defaultSettings(K=K,init.mat = init.mat,...)
   args$pve_init <- FALSE
   option <- readInSettings(args)
+  print(option)
+  readline()
   option$swap <- FALSE
   option$alpha1 <- 1e-10
   option$lambda1 <- 1e-10
@@ -415,8 +417,9 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   initk <- option$K
   if(initk == 0)
   {
-    message('Initializing X to the max -1')
-    option$K <- ncol(X)-1
+    #message('Initializing X to the max -1')
+    #option$K <- ncol(X)-1
+    option$K <- "GRID" #desired default setting
   }
   #Run the bic thing...
   option$V <- FALSE
@@ -719,7 +722,7 @@ return(reg.run)
 #'
 #' @return
 #' @export
-gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K=0, gwasmfiter =5, rep.run = FALSE, covar_se=NULL,
+gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", gwasmfiter =5, rep.run = FALSE, covar_se=NULL,
                     bic.var= "sklearn", use.init.k = FALSE, init.mat = "V", is.sim = FALSE,
                     save.path = "", scale.mats = FALSE, regression.method = "glmnet", shrinkWL=-1,...)
 {
@@ -731,10 +734,10 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K=0, gwasmfiter =5, rep.
   d <- initializeGLEANR(X,W,C, snp.ids, trait.names, K=ifelse(use.init.k, K, 0),
                         init.mat=init.mat, covar_shrinkage=shrinkWL,covar_se=covar_se,...) #Either use specified, or prune down as we
   option <- d$options; args <- d$args; hp <- d$hp; all_ids <- d$all_ids; names <- d$namesl; W_c <- d$W_c
-
   if(is.sim)
   {
     option$Kmin <- K
+    #I think here we previously had forced K to be GRID and sklearn bic for simulations
   }
   option$scale <- scale.mats
   message("scaling set to: ", option$scale)

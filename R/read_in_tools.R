@@ -700,7 +700,7 @@ readInSettings <- function(args)
 
 defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objective = 0.001,min_bic_search_iter=5 )
 {
-  args <- UdlerArgs()
+  args <- defaultInteractiveArgs()
   args$niter <- 200
   args$uncertainty <- ""
 
@@ -800,21 +800,23 @@ YuanSimEasy <- function()
   args$svd_init <- FALSE
   args
 }
-UdlerArgs <- function()
+defaultInteractiveArgs <- function()
 {
   args <- list()
   args$sort <- TRUE
   args$std_coef <- FALSE
   args$covar_matrix = ""
-  args$gwas_effects <-"/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/beta_signed_matrix.tsv"
-  args$uncertainty <- "/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/se_matrix.tsv"
+  #args$gwas_effects <-"/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/beta_signed_matrix.tsv"
+  #args$uncertainty <- "/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/se_matrix.tsv"
+  args$gwas_effects <-""
+  args$uncertainty <- ""
   args$fixed_first <- TRUE
   args$genomic_correction <- ""
   args$overview_plots <- FALSE
   args$nfactors <- 57
   args$calibrate_k <- FALSE
   args$trait_names = ""
-  args$niter <- 150
+  args$niter <- 200
   args$alphas <- ""
   args$lambdas <- ""
   args$autofit <- -1
@@ -836,9 +838,9 @@ UdlerArgs <- function()
   args$MAP_autofit <- -1
   args$auto_grid_search <- FALSE
   args$regression_method = "glmnet"
-  args$converged_obj_change <- 0.05 #this is the percent change from one to the next.
+  args$converged_obj_change <- 0.001 #this is the percent change from one to the next.
   args$prefix <- ""
-  args$bic_var <- "mle"
+  args$bic_var <- "sklearn_eBIC"
   args$param_conv_criteria <- "BIC.change"
   args
 }
