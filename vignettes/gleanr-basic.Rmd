@@ -1,0 +1,62 @@
+---
+title: "Tutorial using GLEANR core functionality"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Tutorial using GLEANR core functionality}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(gleanr)
+```
+
+TODO: need to update the file paths to refer to `ext`, as describedin https://r-pkgs.org/vignettes.html
+For now, just getting things rolling
+Here we provide a single simple example of using `gleanr` on simulated data. While this doesn't comprehensively explore all of gleanr's options and functionality, we focus on the core components that will be helpful for most users.
+As input, `gleanr` requires:
+- A matrix (B) of GWAS effect size estimates (SNPs x traits)
+- A matrix (S) of GWAS standard error estimates (SNPs x traits, same order as B)
+- A matrix (C) of estimated correlation due to sample sharing between GWAS (necessary if you wish to adjust for the impact of sample sharing; traits x traits)
+- A matrix (C_se) of standard error estimates corresponding to values in C (*optional* but recommended) 
+- A list of variances across GWAS z-scores (*optional* to adjust correlation estimates for trait heritability)
+
+
+Note that `gleanr` can be run directly from the command line using input file paths (see the `gleanr_run.R` script in the [gleanr_workflow](https://github.com/aomdahl/gleanr_workflow/blob/main/src/gleaner_run.R) repository). *We recommend this for most use cases as the simplest way to run gleanr.*
+
+However, if users prefer to perform `gleanr` directly in R, users have two options for loading into memory necessary input files. They may:
+1) Read in files manually for input to `gleanr` (allows for easier custom user data filtering) or
+2) Specify file paths and use existing `gleanr` functions to tidy and check input data. *We recommend this option*
+
+## Option 1) Manually read files in
+```{r}
+#fname <- system.file("shape/nc.shp", package="sf")
+fpath <- "/scratch16/abattle4/ashton/snp_networks/gleanr/inst/extdata/"
+library(data.table)
+```
+```{r}
+beta <- fread(paste0(fpath, "sim1.effect_sizes.txt"))
+se <- fread(paste0(fpath, "sim1.std_error.txt"))
+trait_names <- names(beta)[-1]
+snp_names <- unlist(beta$SNP)
+c.mat <- as.matrix(fread(paste0(fpath, "sim1.c_matrix.txt")))
+c_se.mat <- as.matrix(fread(paste0(fpath, "sim1.c_se_matrix.txt")))
+#Separate IDs from the data a
+beta_m <- as.matrix(beta[,-1])
+W_s <- 1/as.matrix(se[,-1])
+ res <- gleanr(beta_m,W_s, snp_names, trait_names, C=c.mat, covar_se=c_se.mat)
+	    run.data <- runSingle(meth, beta_m, K, se_m=se, covar = c.mat, bic.var = args$bic_var,
+                            init.mat = args$init_mat, is.sim = TRUE, save.path = paste0(args$outdir, meth),
+	                          scale.mats = args$step_scaling,shrinkWL=args$WLgamma,conv_objective=0.005,min_bic_search_iter=5) #change on july 11,for testing#not accounting for BIC typoe here...
+	    end_time <- Sys.time()
+```
+
+
+
