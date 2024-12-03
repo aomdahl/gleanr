@@ -719,7 +719,7 @@ return(reg.run)
 #'
 #' @return
 #' @export
-gleaner <- function(X,W, snp.ids, trait.names, C = NULL, K=0, gwasmfiter =5, rep.run = FALSE, covar_se=NULL,
+gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K=0, gwasmfiter =5, rep.run = FALSE, covar_se=NULL,
                     bic.var= "sklearn", use.init.k = FALSE, init.mat = "V", is.sim = FALSE,
                     save.path = "", scale.mats = FALSE, regression.method = "glmnet", shrinkWL=-1,...)
 {
