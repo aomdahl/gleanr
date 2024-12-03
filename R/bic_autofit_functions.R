@@ -103,7 +103,6 @@ trackMinParam <- function(min.dat,U,V,alpha,lambda,bic_a,bic_l,bic_a_dat, bic_l_
       new_bic = bic_a+bic_l
       if(new_bic < min.dat$min_sum)
       {
-        message("Found better setting, updating now...")
         return(list("optimal.u"=U, "optimal.v"=V,
                     "alpha"=alpha, "lambda"=lambda, "bic_a"=bic_a,
                     "bic_l"=bic_l, "min_sum"=new_bic, "iter"=iter_tag,
@@ -335,8 +334,6 @@ MatrixDFU <- function(mat_in,fixed_first = FALSE)
 #Empty means all the terms are 0.
 DropEmptyColumns <- function(matin,option)
 {
-  #DTTFT
-  message("In the right version of this?")
   matin <- as.matrix(matin)
   c <- colSums(matin != 0)
   ret.option <- option
@@ -804,6 +801,8 @@ getBICMatricesGLMNET <- function(opath,option,X,W,W_c, all_ids, names, ...)
 
   if(option$K == "GRID")
   {
+    message("Grid search")
+    readline()
     gridSearchK(opath, option,X,W,W_c,all_ids,names,...)
   }else
   {
@@ -910,7 +909,6 @@ getBICWorkhorse <- function(opath,option,X,W,W_c, all_ids, names, min.iter = 5, 
     #Update tracking data for convergence detection
     curr.alpha <- u.fit$alpha.sel; curr.bic.a <- u.fit$bic; u.bic.dat <- u.fit$bic.dat
     rec.dat <- updateRecDat(rec.dat, u.fit, "U", i, X,W,W_c, optimal.v, option)
-    message("verify this update takes place as expected.")
     if(CheckUEmpty(optimal.u)) {
       message("debug")
     }

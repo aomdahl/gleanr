@@ -62,14 +62,10 @@ calcGlobalResiduals <- function(X,W,U,V, W_cov = NULL, fixed_first = FALSE, std.
 
 mleScaleMatrix <- function(explanatory.var)
 {
-  message("Updated for simplification")
   v <- scale(c(explanatory.var))
   r <- matrix(v, nrow = nrow(explanatory.var))
   #i have verified this orders the matrix correctly, rest assured.
   return(r)
-  #mu = mean(explanatory.var)
-  #var <- (1/(ncol(explanatory.var) * nrow(explanatory.var))) * sum((explanatory.var-mu)^2)
-  #explanatory.var/sqrt(var)
 }
 
 mleScaleVector <- function(x)
