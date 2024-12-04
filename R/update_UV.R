@@ -517,7 +517,7 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
   easy.objective <- c()
   dev.score<- c()
   V = NULL
-  message("convergence set to ", option$conv0)
+  userMessage(option$verbosity, paste0("convergence set to ", option$conv0))
 
   #Random initialization of F
   if(!is.null(preV) & option$u_init == "")
@@ -685,8 +685,7 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
         EndIterStatement(iii, tracking.data, option) #only comments if verbosity
     }
 
-    userMessage(option$verbosity, "Iteration concluded.")
-    userMessage(option$verbosity, paste0("Current memory usage: ",lobstr::mem_used()))
+    userMessage(option$verbosity, paste0("Memory usage at the end of the current iteration: ",lobstr::mem_used()))
 
   }
 }
@@ -702,9 +701,6 @@ EndIterStatement <- function(iter, td, option)
     userMessage(v.set, paste0('Frobenius norm of (updated factor matrix - previous factor matrix) / number of factors  = ', td$V_change[length(td$V_change)]))
     userMessage(v.set, paste0('U Sparsity = ', round(td$U_sparsities[length(td$U_sparsities)], digits = 3),
                               '; V sparsity = ',  round(td$V_sparsities[length(td$V_sparsities)],digits = 3), '; ', td$K, ' factors remain'))
-    cat('\n')
-
-
 }
 
 #' Generate regression explanatory variable and weighted elements

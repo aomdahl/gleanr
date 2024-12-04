@@ -228,7 +228,6 @@ strimmerCovShrinkage <- function(args, covar, covar_se, sd.scaling=1)
 
   offdiag <- covar; diag(offdiag) <- 0
   gamma = sum(covar_se^2) / sum(offdiag^2) #squaring covar_se since we want variance, not SE
-  print(gamma)
   args$WLgamma <- gamma
 
   userMessage(args$verbosity, paste0("Selected shrinkage gamma is: ", gamma))

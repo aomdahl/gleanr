@@ -134,7 +134,7 @@ matrixGWASQC <- function(X, W, id.list, na_thres = 0.5, na.threshold=0.7)
   }
 
   #TODO: fix this report, it isn't quite right.
-  updateLog("Cells with invalid entries (NA, or excessive Chi^2 stat) will be given a weight of 0.")
+  updateLog("Cells with invalid entries (NA) will be given a weight of 0.")
   removed.cols <- length(drop.cols) * nrow(X)
   updateLog(paste0(sum(all.drops), " out of ", (nrow(all.drops) * ncol(all.drops)), " total cells are invalid and will be 0'd."))
   #updateLog(paste0("  DEPRECATED: Zeroing out ", sum(drop.chi2), " entries with extreme chi^2 stats > ", chi.thresh))
@@ -172,13 +172,13 @@ readInBetas <- function(fpath, option)
 #Function to read in a covariance matrix.
 #This code was copied from "projection_regression_helper.R", but belongs here
 # readInCovariance(args$covar_matrix, names)
+#Rows and columns shoulud correspond in order, and names should align
 #readInCovariance(args$covar_mat, trait.list, diag_enforce = 1)
 readInCovariance <- function(p, name_order, diag_enforce = 1, coerce_threshold=1)
 {
   if(p == "" | is.null(p)) {return(NULL)}
   else
   {
-    message("Enforcing the column order to be the same as input file name order")
     w.in <- as.matrix(data.table::fread(p, check.names = TRUE))
     row.names(w.in) <- colnames(w.in)
     if(!is.na(diag_enforce))
@@ -495,7 +495,7 @@ SampleOverlapCovarHandler <- function(args, names, X)
   #If we are scaling by the sample standard deviation, assuming we use LDSC input
   if(args$sample_sd != "")
   {
-    message("Verify that the name order is correct. Should be...")
+    message("Note to user: Verify that the input trait order in the file containing estimates of SD for each study corresponds to the order of GWAS in B and S.")
     sd.df <- data.table::fread(args$sample_sd)
     sd.scaling <- 1/(as.matrix(sd.df$V2) %*% t(as.matrix(sd.df$V2)))
     diag(sd.scaling) <- 1 #make it correlation matrix
@@ -563,7 +563,7 @@ selectInitK <- function(args,X_, evals = NULL)
   #if(is.numeric(args$K) & args$K !=0)
   if(args$K %in% paste(1:ncol(X_)))
   {
-    message("Using the specified number of factors for initialization,", args$K)
+    message("Using the specified number of factors for initialization, K=", args$K)
     return(as.numeric(args$K))
   } else
   {
@@ -692,20 +692,20 @@ readInSettings <- function(args)
 #####
 ## Setting defaults helpful for running elsewhere
 
-defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objective = 0.001,min_bic_search_iter=5, is_sim=FALSE )
+defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objective = 0.001,min_bic_search_iter=5, is_sim=FALSE,verbosity=1 )
 {
   args <- defaultInteractiveArgs()
   args$niter <- 200
   args$uncertainty <- ""
   args$gwas_effects <- ""
   args$nfactors <- K
+  args$verbosity <- verbosity
   args$scale_n <- ""
   args$output <- "/scratch16/abattle4/ashton/snp_networks/scratch/testing_gwasMF_code/matrix_simulations/RUN"
   opath <- "gwasMF"
   args$simulation <- is_sim
   args$sort <- FALSE #b/c default for sims.
   args$converged_obj_change <- conv_objective
-  message("set convergence objective to ",args$converged_obj_change)
   args$std_coef <- FALSE
   args$std_y <- TRUE  #Updated 12/04
   args$min.bic.search.iter <- min_bic_search_iter
@@ -803,14 +803,12 @@ defaultInteractiveArgs <- function() #This used to be to update data with the ud
   args$output <- ""
   args$converged_obj_change <- 1
   args$epsilon <- 1e-8
-  args$verbosity <- 1
   args$converged_obj_change <- 0.001 #this is the percent change from one to the next.
   args$bic_var <- "sklearn_eBIC"
   args$param_conv_criteria <- "BIC.change"
 
   #redundant with fillDefaultSettings:
   fillDefaultSettings(args)
-  args
 }
 
 #Old udler file paths:
@@ -882,8 +880,6 @@ writeRunReport <- function(argsin)
 
   message("------------------------------ OUTPUT SETTINGS ------------------------------")
   message("Output directory: ", argsin$output)
-  message("")
-  message("-----------------------------------------------------------------------------")
 }
 
 

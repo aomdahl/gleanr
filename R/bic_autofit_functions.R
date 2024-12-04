@@ -394,8 +394,6 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   args <- defaultSettings(K=K,init.mat = init.mat,is_sim=is.sim,...)
   args$pve_init <- FALSE
   option <- readInSettings(args)
-  print(option)
-  readline()
   option$swap <- FALSE
   option$alpha1 <- 1e-10
   option$lambda1 <- 1e-10
@@ -567,7 +565,7 @@ sklearnBIC <- function(fit,x,y)
   n = length(y)
   #OLS fit
   #This is expensive to do afeter taking so long to fit a goshdarn lasso. Need to find an alternative option?
-  lm.fit <- glmnet::bigGlm(y=y , x=x, family = "gaussian",intercept = FALSE,trace.it = 1)
+  lm.fit <- glmnet::bigGlm(y=y , x=x, family = "gaussian",intercept = FALSE,trace.it = 0)
 
   #our fit
   coef = stats::coef(fit)
@@ -701,8 +699,6 @@ return(reg.run)
 #' @param snp.ids the names of the SNPs in X, in order
 #' @param trait.names the names of the studies in X, in order
 #' @param K the target number of K to yield.
-#' @param gwasmfiter how many burn-in iterations to run, only used if rep.run is TRUE
-#' @param rep.run if should proceed with multiple random initializations. Otherwise, initalize with SVD
 #' @param bic.var How to calculate the variance on BIC term. Deprecated as of Feb 21, 2023
 #' @param use.init.k To initialize to given K or to full
 #' @param init.mat Which matrix to initialize with, V or U. Default is V
@@ -711,8 +707,8 @@ return(reg.run)
 #'
 #' @return
 #' @export
-gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", gwasmfiter =5, rep.run = FALSE, covar_se=NULL,
-                    bic.var= "sklearn", use.init.k = FALSE, init.mat = "V", is.sim = FALSE,
+gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", covar_se=NULL,
+                    bic.var= "sklearn_eBIC", use.init.k = FALSE, init.mat = "V", is.sim = FALSE,
                     save.path = "", scale.mats = FALSE, regression.method = "glmnet", shrinkWL=-1,...)
 {
   opath = save.path
@@ -729,10 +725,8 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", gwasmfiter =5,
     option$Kmin <- K
     option$bic.var="sklearn_eBIC"
     option$K <- "GRID"
-    #I think here we previously had forced K to be GRID and sklearn bic for simulations
   }
   option$scale <- scale.mats
-  message("scaling set to: ", option$scale)
   option$svd_init <- TRUE; args$svd_init <- TRUE
   K.cap <- K
   option$bic.var <- bic.var
@@ -797,8 +791,7 @@ getBICMatricesGLMNET <- function(opath,option,X,W,W_c, all_ids, names, ...)
   message("------------------------------ GLEANR MODEL SELECTION STEP ------------------------------")
   if(option$K == "GRID")
   {
-    message("Grid search")
-    readline()
+    userMessage(option$verbosity, "Grid search for alpha, lambda, and Kinit selection")
     gridSearchK(opath, option,X,W,W_c,all_ids,names,...)
   }else
   {
@@ -899,14 +892,14 @@ getBICWorkhorse <- function(opath,option,X,W,W_c, all_ids, names, min.iter = 5, 
       min.dat <- trackMinParam(min.dat,optimal.u,optimal.v,curr.alpha,v.fits$lambda.sel,curr.bic.a,v.fits$bic,u.bic.dat, v.bic.dat, "V0")
     }
 
-    message(paste0("Fitting U, iteration ", i))
+    userMessage(option$verbosity, paste0("Fitting U, iteration ", i))
     u.fit <- FitUWrapper(X, W, W_c, optimal.v, option,reg.elements=reg.elements)
 
     #Update tracking data for convergence detection
     curr.alpha <- u.fit$alpha.sel; curr.bic.a <- u.fit$bic; u.bic.dat <- u.fit$bic.dat
     rec.dat <- updateRecDat(rec.dat, u.fit, "U", i, X,W,W_c, optimal.v, option)
-    if(CheckUEmpty(optimal.u)) {
-      message("debug")
+    if(CheckUEmpty(optimal.u) & i >1 ) {
+      warning("Empty U matrix post-initialization. Should have terminated already. Report to developers")
     }
     min.dat <- trackMinParam(min.dat,u.fit$U,optimal.v,curr.alpha,curr.lambda,curr.bic.a,curr.bic.l,u.bic.dat, v.bic.dat, paste0("U_", i))
     dropped.dat <- DropEmptyColumns(u.fit$U,option); optimal.u <- dropped.dat$updatedMatrix; option <-dropped.dat$updatedOptions
@@ -917,7 +910,7 @@ getBICWorkhorse <- function(opath,option,X,W,W_c, all_ids, names, min.iter = 5, 
       }
 
     #fit V now
-    message(paste0("Fitting V, iteration ", i))
+    userMessage(option$verbosity, paste0("Fitting V, iteration ", i))
     v.fits <- FitVWrapper(X,W,W_c, optimal.u,option,reg.elements=reg.elements)
 
     #Update the tracking data for downstream debugging

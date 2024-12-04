@@ -102,7 +102,6 @@
 
       }
       else{ #just fitting a single instance:
-        message("Fitting model")
         fit <- glmnet::glmnet(x = long.v, y = long.x, family = "gaussian", alpha = 1,
                              intercept = FALSE, standardize = option$std_coef,lambda = option$alpha1,trace.it=progress.bar)
         penalty <- fit$penalty

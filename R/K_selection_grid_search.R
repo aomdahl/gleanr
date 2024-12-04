@@ -202,7 +202,7 @@ chooseNextParams <- function(best_K, curr_grid,all_K)
   #Ensure we aren't repeating previous tests
   if(any(test.list %in% curr_grid$K))
   {
-    message("Caught a repeat test, avoiding")
+    #message("Caught a repeat test, avoiding")
     repeats <- which(test.list %in% curr_grid$K)
     test.list <- test.list[-repeats]
   }
@@ -330,7 +330,7 @@ getBestRun <- function(gs_object, curr_best = NULL)
 optimizeK <- function(K, opath, option, X_in, W_in, W_c, all_ids, names,...) {
   option$K <- K
   bic.dat <- getBICWorkhorse(opath, option, X_in, W_in, W_c, all_ids, names, ...)
-  message("K: ",K, ", BIC: ", bic.dat$min.dat$min_sum)
+  userMessage(option$verbosity, paste0("K: ",K, ", BIC: ", round(bic.dat$min.dat$min_sum,digits=3),"\n"), thresh = 0)
   return(bic.dat)
 }
 
@@ -340,11 +340,10 @@ gridSearch <- function(iter_params, ncpus, opath, option, X_in, W_in, W_c, all_i
   ret.list <- list("tests"=data.frame("iter"=1:length(iter_params), "K"=unlist(iter_params)))
   if(ncpus == 1 | length(iter_params) == 1)
   {
-    message("Not running in parallel this time...")
     ret.list$results <- lapply(iter_params, function(kinit) optimizeK(kinit, opath, option, X_in, W_in, W_c, all_ids, names,...))
   }else
   {
-    message("Now running in parallel across ", ncpus, " cores.")
+    userMessage(option$verbosity, paste0("Now running in parallel across ", ncpus, " cores."))
     ret.list$results <- parallel::mclapply(iter_params, function(kinit)
     {
       optimizeK(kinit, opath, option, X_in, W_in, W_c, all_ids, names,...)

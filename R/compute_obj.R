@@ -235,12 +235,14 @@ compute_obj <- function(X, W, W_c, L, FactorM, option, decomp = FALSE, loglik = 
 	}
   if(is.null(option$alpha1) | is.null(option$lambda1))
   {
-    message("Unable to calculate objective, no valid sparsity parameters given.")
+    #This occurs on the first iteration
+    #message("Unable to calculate objective, no valid sparsity parameters given.")
     return(NA)
   }
   if(is.na(option$alpha1) | is.na(option$lambda1))
   {
-    message("Unable to calculate objective, no valid sparsity parameters given.")
+    #This occurs on the first iteration
+    #message("Unable to calculate objective, no valid sparsity parameters given.")
     return(NA)
   }
   M = ncol(X)

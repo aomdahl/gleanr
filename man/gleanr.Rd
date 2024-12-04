@@ -11,10 +11,8 @@ gleanr(
   trait.names,
   C = NULL,
   K = "GRID",
-  gwasmfiter = 5,
-  rep.run = FALSE,
   covar_se = NULL,
-  bic.var = "sklearn",
+  bic.var = "sklearn_eBIC",
   use.init.k = FALSE,
   init.mat = "V",
   is.sim = FALSE,
@@ -35,10 +33,6 @@ gleanr(
 \item{trait.names}{the names of the studies in X, in order}
 
 \item{K}{the target number of K to yield.}
-
-\item{gwasmfiter}{how many burn-in iterations to run, only used if rep.run is TRUE}
-
-\item{rep.run}{if should proceed with multiple random initializations. Otherwise, initalize with SVD}
 
 \item{bic.var}{How to calculate the variance on BIC term. Deprecated as of Feb 21, 2023}
 
