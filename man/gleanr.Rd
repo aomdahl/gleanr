@@ -10,7 +10,7 @@ gleanr(
   snp.ids,
   trait.names,
   C = NULL,
-  K = 0,
+  K = "GRID",
   gwasmfiter = 5,
   rep.run = FALSE,
   covar_se = NULL,

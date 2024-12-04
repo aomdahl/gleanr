@@ -35,28 +35,14 @@ However, if users prefer to perform `gleanr` directly in R, users have two optio
 1) Read in files manually for input to `gleanr` (allows for easier custom user data filtering) or
 2) Specify file paths and use existing `gleanr` functions to tidy and check input data. *We recommend this option*
 
+
 ## Option 1) Manually read files in
 ```{r}
 #fname <- system.file("shape/nc.shp", package="sf")
 fpath <- "/scratch16/abattle4/ashton/snp_networks/gleanr/inst/extdata/"
 library(data.table)
 ```
-```{r}
-beta <- fread(paste0(fpath, "sim1.effect_sizes.txt"))
-se <- fread(paste0(fpath, "sim1.std_error.txt"))
-trait_names <- names(beta)[-1]
-snp_names <- unlist(beta$SNP)
-c.mat <- as.matrix(fread(paste0(fpath, "sim1.c_matrix.txt")))
-c_se.mat <- as.matrix(fread(paste0(fpath, "sim1.c_se_matrix.txt")))
-#Separate IDs from the data a
-beta_m <- as.matrix(beta[,-1])
-W_s <- 1/as.matrix(se[,-1])
- res <- gleanr(beta_m,W_s, snp_names, trait_names, C=c.mat, covar_se=c_se.mat)
-	    run.data <- runSingle(meth, beta_m, K, se_m=se, covar = c.mat, bic.var = args$bic_var,
-                            init.mat = args$init_mat, is.sim = TRUE, save.path = paste0(args$outdir, meth),
-	                          scale.mats = args$step_scaling,shrinkWL=args$WLgamma,conv_objective=0.005,min_bic_search_iter=5) #change on july 11,for testing#not accounting for BIC typoe here...
-	    end_time <- Sys.time()
-```
+
 
 
 
