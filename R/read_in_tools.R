@@ -803,8 +803,6 @@ YuanSimEasy <- function()
 defaultInteractiveArgs <- function()
 {
   args <- list()
-  args$sort <- TRUE
-  args$std_coef <- FALSE
   args$covar_matrix = ""
   #args$gwas_effects <-"/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/beta_signed_matrix.tsv"
   #args$uncertainty <- "/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/se_matrix.tsv"
@@ -814,7 +812,6 @@ defaultInteractiveArgs <- function()
   args$genomic_correction <- ""
   args$overview_plots <- FALSE
   args$nfactors <- 57
-  args$calibrate_k <- FALSE
   args$trait_names = ""
   args$niter <- 200
   args$alphas <- ""
@@ -825,7 +822,8 @@ defaultInteractiveArgs <- function()
   args$svd_init <- TRUE
   args$IRNT <- FALSE
   args$weighting_scheme = "B_SE"
-  args$output <- "/scratch16/abattle4/ashton/snp_networks/custom_l1_factorization/results/udler_original/bic_version/"
+  #args$output <- "/scratch16/abattle4/ashton/snp_networks/custom_l1_factorization/results/udler_original/bic_version/"
+  args$output <- ""
   args$converged_obj_change <- 1
   args$scaled_sparsity <- TRUE
   args$posF <- FALSE
@@ -842,6 +840,10 @@ defaultInteractiveArgs <- function()
   args$prefix <- ""
   args$bic_var <- "sklearn_eBIC"
   args$param_conv_criteria <- "BIC.change"
+  #redundant with fillDefaultSettings:
+  args$std_coef <- FALSE
+  args$sort <- TRUE
+  args$calibrate_k <- FALSE
   args
 }
 

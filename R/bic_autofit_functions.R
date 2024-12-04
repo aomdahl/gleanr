@@ -367,12 +367,12 @@ DropEmptyColumnsPipe <- function(lin,options)
 #' @param W- weights from Standard errors
 #' @param C - cohort overlap estimates
 #' @param snp.ids - list of SNP ids, corresponds to order in X
-#' @param trait.names - traitnames to use, corresponds to order in X
+#' @param trait.names - trait names to use, corresponds to order in X
 #' @param K - specify a K if you would like.
 #' @param init.mat- which matrix to initialize to
-#' @param covar_shrinkage- Which covariance matrix shrinkage type to apply, default is variance based (Strimmer)
-#' @param enforce_blocks - Force the matrix to be block matrix
-#' @param covar_se
+#' @param covar_shrinkage Degree of shrinkage towards the identity. matrix to apply to C (0 means none, 1 means perfect shrhinkage.) If covar_se is not NULL, defaults to the variance based (Strimmer) approach
+#' @param enforce_blocks Force the matrix to be block matrix, default TRUE
+#' @param covar_se Matrix of standard errors corresponding to C. Used for shrinkage. If given, covar_shrinkage defaults to "STRIMMER"
 #' @param ...
 #'
 #' @return a list containing the objects needed to run gleaner, including the decorrelating transformation matrix andthe options matrix.
@@ -391,8 +391,6 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   {
     warning("Columns of standard errors contain no variance. May not be valid")
   }
-  print(K)
-  message("This is an archaic initialization; recommend doing away with this...")
   args <- defaultSettings(K=K,init.mat = init.mat,...)
   args$pve_init <- FALSE
   option <- readInSettings(args)
@@ -432,16 +430,16 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
     covar <- C
   }
 
-  #if specified, srhink
-
-  if(covar_shrinkage == "strimmer" | covar_shrinkage == "STRIMMER")
+  #if specified, shrinkage on covariance estimation matrix
+  #If no method specified but the SE matrix is provided, we do strimmer by default.
+  if(covar_shrinkage == "strimmer" | covar_shrinkage == "STRIMMER" | (covar_shrinkage == -1 & !is.null(covar_se)))
   {
+    message("Applying shrinkage to C based on the C_se matrix")
     covar <- strimmerCovShrinkage(args, covar, covar_se, sd.scaling=1)
   }
   else if(covar_shrinkage > -1)
   {
-    message("Performing WL shrinkage, as desired")
-
+    message("Applying shrinkage to C  as specified")
     covar <- linearShrinkLWSimple(covar, args$WLgamma)
 
   }
