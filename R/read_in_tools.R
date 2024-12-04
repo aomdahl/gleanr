@@ -656,6 +656,7 @@ readInSettings <- function(args)
   option$min.bicsearch.iter <- args$min.bic.search.iter
   #Internal use only:
   option$actively_calibrating_sparsity <- FALSE
+  option$save_out <- TRUE #save most of the time.
   #This looks alot like object-oriented programming.
   #You should just have this be a proper R object with all the attributes and data you need....
 
@@ -701,8 +702,9 @@ defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objectiv
   args$nfactors <- K
   args$verbosity <- verbosity
   args$scale_n <- ""
-  args$output <- "/scratch16/abattle4/ashton/snp_networks/scratch/testing_gwasMF_code/matrix_simulations/RUN"
-  opath <- "gwasMF"
+  #args$output <- "/scratch16/abattle4/ashton/snp_networks/scratch/testing_gwasMF_code/matrix_simulations/RUN"
+  args$output <- "./"
+  opath <- "gleanr"
   args$simulation <- is_sim
   args$sort <- FALSE #b/c default for sims.
   args$converged_obj_change <- conv_objective

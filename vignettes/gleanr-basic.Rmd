@@ -65,7 +65,7 @@ Now, we run gleanr, with arguments as follows:
 - `c_se.mat`: corresponding matrices of standard errors for `c.mat` estimates.
 - For clarity we explicitly call `K="GRID"`, which selects `K_init` using a grid search to minimize the BIC, and `conv_objective=0.005` to specify when our objective achieves convergence.
 ```{r}
-res <- gleanr(beta_m,W_s, snp_names, trait_names, C=c.mat, covar_se=c_se.mat, K="GRID",conv_objective=0.005, verbosity=0)
+res <- gleanr(beta_m,W_s, snp_names, trait_names, C=c.mat, covar_se=c_se.mat, K="GRID",conv_objective=0.005, verbosity=0, save_out=FALSE)
 ```
 That's the quickest way to run gleanr! 
 ## Visualizing `gleanr` outputs

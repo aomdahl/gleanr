@@ -53,7 +53,7 @@ gridSearchK <- function(opath, option,X,W,W_c,all_ids,names,step.limit = 8,init.
     }
     return(sdv$min_result)
   }
-  save(sdv,grid.search.record, file = paste0(opath, "_K_search.RData"))
+  if(option$save_out) {save(sdv,grid.search.record, file = paste0(opath, "_K_search.RData"))}
   #If we aren't looking at immediatley adjacent K and we haven't exceeded our step limit
   while(length(sdv$query_matrix$K) < step.limit & sdv$k_diff >= 1)
   {
@@ -72,10 +72,10 @@ gridSearchK <- function(opath, option,X,W,W_c,all_ids,names,step.limit = 8,init.
       }
     }
 
-    save(sdv,grid.search.record, file = paste0(opath, "_K_search.RData"))
+    if(option$save_out) { save(sdv,grid.search.record, file = paste0(opath, "_K_search.RData"))}
   }
   #save(sdv, file="/scratch16/abattle4/ashton/DEBUG.RData")
-  save(sdv,grid.search.record, file = paste0(opath, "_K_search.RData"))
+  if(option$save_out) { save(sdv,grid.search.record, file = paste0(opath, "_K_search.RData")) }
   sdv$min_result
 }
 

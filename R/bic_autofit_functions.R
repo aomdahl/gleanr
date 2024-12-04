@@ -373,13 +373,14 @@ DropEmptyColumnsPipe <- function(lin,options)
 #' @param covar_shrinkage Degree of shrinkage towards the identity. matrix to apply to C (0 means none, 1 means perfect shrhinkage.) If covar_se is not NULL, defaults to the variance based (Strimmer) approach
 #' @param enforce_blocks Force the matrix to be block matrix, default TRUE
 #' @param covar_se Matrix of standard errors corresponding to C. Used for shrinkage. If given, covar_shrinkage defaults to "STRIMMER"
+#' @param save_out Setting to save out intermediate files. Default is true.
 #' @param ...
 #'
 #' @return a list containing the objects needed to run gleaner, including the decorrelating transformation matrix andthe options matrix.
 #' @export
 #'
 #' @examples
-initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", covar_shrinkage=-1,enforce_blocks=TRUE,covar_se=NULL,is.sim=FALSE, ...)
+initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", covar_shrinkage=-1,enforce_blocks=TRUE,covar_se=NULL,is.sim=FALSE,save_out=TRUE,...)
 {
   #A few quick sanity checks:
   if(all(apply(X, 2, var) == 0) | all(apply(X, 1, var) == 0))
@@ -398,6 +399,7 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   option$alpha1 <- 1e-10
   option$lambda1 <- 1e-10
   option$block_covar <- 0.2
+  option$save_out=save_out
   output <- args$output
   hp <- NA
   all_ids <-snp.ids; names <- trait.names
@@ -685,8 +687,8 @@ gwasML_ALS_Routine <- function(option, X, W,W_c, optimal.init, maxK=0, opath = "
     #Note that no pruning takes place if maxK == ncol
     reg.run <- PruneNumberOfFactors(X,W,W_c,reg.run,option$Kmin, maxK, option)
     reg.run <- OrderEverythingByPVE(reg.run,X,W, W_c,option, jointly = FALSE)
+  if(option$save_out) { save(reg.run, file = paste0(option$out,opath, "_gleanr_iter.Rdata" )) }
 
-  save(reg.run, file = paste0(option$out,opath, "_gleanr_iter.Rdata" ))
 
 return(reg.run)
 }
@@ -709,7 +711,7 @@ return(reg.run)
 #' @export
 gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", covar_se=NULL,
                     bic.var= "sklearn_eBIC", use.init.k = FALSE, init.mat = "V", is.sim = FALSE,
-                    save.path = "", scale.mats = FALSE, regression.method = "glmnet", shrinkWL=-1,...)
+                    save.path = "", scale.mats = FALSE, regression.method = "glmnet", save_out=TRUE, shrinkWL=-1,...)
 {
   opath = save.path
   if(is.null(C))
@@ -718,7 +720,7 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", covar_se=NULL,
   }
 
   d <- initializeGLEANR(X,W,C, snp.ids, trait.names, K=ifelse(use.init.k, K, 0),
-                        init.mat=init.mat, covar_shrinkage=shrinkWL,covar_se=covar_se,is.sim=is.sim,...) #Either use specified, or prune down as we
+                        init.mat=init.mat, covar_shrinkage=shrinkWL,covar_se=covar_se,is.sim=is.sim,save_out=save_out,...) #Either use specified, or prune down as we
   option <- d$options; args <- d$args; hp <- d$hp; all_ids <- d$all_ids; names <- d$namesl; W_c <- d$W_c
   if(is.sim)
   {
@@ -742,7 +744,7 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", covar_se=NULL,
   {
     bic.dat <- getBICMatrices(opath,option,X,W,W_c, all_ids, names,min.iter=option$min.bicsearch.iter,reg.elements=reg.vect)
   }
-  if(is.sim)
+  if(is.sim & option$save_out)
   {
     save(bic.dat, file = paste0(save.path, "bic.RData"))
   }
@@ -759,7 +761,7 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", covar_se=NULL,
   option$K <- bic.dat$K
 
     ret <- gwasML_ALS_Routine(option, X, W, W_c, bic.dat$optimal.v, maxK=K.cap)
-    if(is.sim)
+    if(is.sim & option$save_out)
     {
       save(ret, file = paste0(save.path, "global.fit.als.RData"))
     }
