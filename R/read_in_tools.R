@@ -194,7 +194,7 @@ readInCovariance <- function(p, name_order, diag_enforce = 1, coerce_threshold=1
       warning_string=paste0("Some entries in this sample sharing correlation matrix are greater than ",  coerce_threshold,
                             ". This is possible is using estimates from XT-LDSC\n",
                             "GLEANR will set these values to +/-0.98. Modify the matrix directly if you want different behavior")
-	     Warning(warning_string)
+	     warning(warning_string)
 	     s <- sign(w.in)
 	     w.in[abs(w.in) > 1] <- 0.98#Previosly set to 0.95, here to 0.98
 	     w.in <- w.in * s #and then return the sign
