@@ -15,6 +15,7 @@ initializeGLEANR(
   covar_shrinkage = -1,
   enforce_blocks = TRUE,
   covar_se = NULL,
+  is.sim = FALSE,
   ...
 )
 }
@@ -26,28 +27,28 @@ initializeGLEANR(
 }}
 
 \item{snp.ids}{\itemize{
-\item list of SNP ids, corresponds to order in X
+\item list of SNP ids, corresponds to order in X∂
 }}
 
 \item{trait.names}{\itemize{
-\item traitnames to use, corresponds to order in X
+\item trait names to use, corresponds to order in X
 }}
 
 \item{K}{\itemize{
 \item specify a K if you would like.
 }}
 
-\item{enforce_blocks}{\itemize{
-\item Force the matrix to be block matrix
-}}
+\item{covar_shrinkage}{Degree of shrinkage towards the identity. matrix to apply to C (0 means none, 1 means perfect shrhinkage.) If covar_se is not NULL, defaults to the variance based (Strimmer) approach}
+
+\item{enforce_blocks}{Force the matrix to be block matrix, default TRUE}
+
+\item{covar_se}{Matrix of standard errors corresponding to C. Used for shrinkage. If given, covar_shrinkage defaults to "STRIMMER"}
 
 \item{...}{}
 
 \item{W-}{weights from Standard errors}
 
 \item{init.mat-}{which matrix to initialize to}
-
-\item{covar_shrinkage-}{Which covariance matrix shrinkage type to apply, default is variance based (Strimmer)}
 }
 \value{
 a list containing the objects needed to run gleaner, including the decorrelating transformation matrix andthe options matrix.
