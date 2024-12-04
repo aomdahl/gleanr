@@ -411,7 +411,6 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
     option$K <- "GRID" #desired default setting
   }
   #Run the bic thing...
-  option$V <- FALSE
   option$fixed_ubiqs <- TRUE
 
   if(enforce_blocks)
@@ -759,7 +758,6 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", gwasmfiter =5,
                      "V_change" = c(), "U_change" = c(), "decomp_obj" ="", "model.loglik" = c(), "Vs"=list(), "Us"=list(), "pve"=c(0)))
   }
   option <- bic.dat$options
-  option$V <- TRUE
   option$alpha1 <- bic.dat$alpha #this is used to regularize U
   option$lambda1 <- bic.dat$lambda #This is used to regularize V
   option$K <- bic.dat$K

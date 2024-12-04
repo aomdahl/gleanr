@@ -41,6 +41,8 @@
   {
 
     max.sparsity <- NA; penalty = NA; ll = NA; l = NA; sse=NA
+    progress.bar <- ifelse(option$verbosity > 0,1,0)
+
     #If we haven't specified the regression data we need, build it.
     if(is.null(reg.elements))
     {
@@ -76,7 +78,7 @@
       if(is.na(option$alpha1)) #we are searching for parameters, phase 1 of the work.
       {
         fit <- glmnet::glmnet(x = long.v, y = long.x, family = "gaussian", alpha = 1,
-                             intercept = FALSE, standardize = option$std_coef,nlambda = 100, trace.it=1) #lambda = option[['alpha1']],
+                             intercept = FALSE, standardize = option$std_coef,nlambda = 100, trace.it=progress.bar) #lambda = option[['alpha1']],
         #print(paste0("Just fit the regression: ", pryr::mem_used()))
         penalty <- fit$penalty
         alpha.list <- fit$lambda
@@ -102,7 +104,7 @@
       else{ #just fitting a single instance:
         message("Fitting model")
         fit <- glmnet::glmnet(x = long.v, y = long.x, family = "gaussian", alpha = 1,
-                             intercept = FALSE, standardize = option$std_coef,lambda = option$alpha1,trace.it=1)
+                             intercept = FALSE, standardize = option$std_coef,lambda = option$alpha1,trace.it=progress.bar)
         penalty <- fit$penalty
         u.ret = matrix(coef(fit, s = option$alpha1)[-1], nrow = nrow(X), ncol = ncol(V),byrow = TRUE)
         return(list("U" = u.ret, "sparsity_space"=u.ret, "total.log.lik" = NA, "penalty" = penalty, "s"=s, "SSE"=deviance(fit)))

@@ -678,7 +678,7 @@ readInSettings <- function(args)
   option[["MAP_autofit"]] <- as.numeric(args$MAP_autofit)
   option$intercept_ubiq <- FALSE
   option$traitSpecificVar <- FALSE
-  option$V <- args$verbosity
+  option$verbosity <- args$verbosity
   option$calibrate_sparsity <- args$scaled_sparsity
   if(args$ncores > 1)
   {

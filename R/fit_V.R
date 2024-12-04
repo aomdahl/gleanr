@@ -38,6 +38,7 @@ FitVGlobal <- function(X, W, W_c, U, option, formerV = NULL, reg.elements=NULL)
   M = ncol(X)
   N=nrow(X)
   sparsity.est <- NA; penalty = NA; ll = NA; l = NA; FactorM = c(); penalty = NA
+  progress.bar <- ifelse(option$verbosity > 0,1,0)
   if(is.null(reg.elements))
   {
    long.x <- c(t(W_c) %*% t(X*W)) #Stacked by SNP
@@ -64,7 +65,7 @@ FitVGlobal <- function(X, W, W_c, U, option, formerV = NULL, reg.elements=NULL)
        {
          fit <- glmnet::glmnet(x = long.u, y = long.x, family = "gaussian", alpha = 1,
                               intercept = FALSE, standardize = option$std_coef,
-                              penalty.factor = lasso.active.set,  trace.it=1) #lambda = option[['alpha1']],
+                              penalty.factor = lasso.active.set,  trace.it=progress.bar) #lambda = option[['alpha1']],
          lambda.list <- fit$lambda
          penalty <- fit$penalty
         #Calculate the BIC and store the associated data
@@ -83,7 +84,7 @@ FitVGlobal <- function(X, W, W_c, U, option, formerV = NULL, reg.elements=NULL)
        }else {
          fit <- glmnet::glmnet(x = long.u, y = long.x, family = "gaussian", alpha = 1,
                               intercept = FALSE, standardize = option$std_coef, penalty.factor = lasso.active.set,
-                              lambda=option$lambda1, trace.it=1)
+                              lambda=option$lambda1, trace.it=progress.bar)
          penalty <- fit$penalty
          v.curr = matrix(coef(fit, s = option$lambda1)[-1], nrow = ncol(X), ncol = ncol(U),byrow = TRUE)
          return(list("V" = pm(v.curr), "sparsity_space"=max(fit$lambda), "total.log.lik" = NA, "penalty" = NA, "s"=s,"SSE"=deviance(fit)))

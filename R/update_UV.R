@@ -449,7 +449,7 @@ ConvergenceConditionsMet <- function(iter,X,W,W_c, U,V,tracker,option, initV = F
   }
  #If we have completed at least 1 iteration and we go up, end it.
   #First iteration has objective change of 0.
-  message("Current objective change: ",obj.change.percent )
+  userMessage(option$verbosity,paste0("Current objective change: ",obj.change.percent ))
   if(objective_change < 0 & option[['conv0']] > 0) #& length(tracker$obj) > 2)
   {
     message("warning: negative objective")
@@ -651,15 +651,12 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
 
     # Drop low PVE and align two matrices
     updated.mats <- AlignFactorMatrices(X,W,U, V); U <- updated.mats$U; V <- updated.mats$V
-
-    message("Now checking convergence")
-    message("memory: ", lobstr::mem_used())
     convergence.status <- ConvergenceConditionsMet(iii,X,W,W_c,U, V,
                                                    tracking.data, option, initV = is.null(preV),
                                                    loglik = iteration.ll.total, scalar = U.dat$s)
     if(convergence.status %in% c("converged", "exceeded"))
     {
-      message("Convergence criteria met...")
+      message("Convergence criteria achieved.")
       cat('\n')
       updateLog(paste0('Total time used for optimization: ',  round(difftime(Sys.time(), tStart0, units = "mins"), digits = 3), ' min'), option);
       cat('\n')
@@ -692,26 +689,35 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
       tracking.data <- UpdateTrackingParams(tracking.data, X,W,W_c,U,V,
                                             option, loglik = iteration.ll.total,scalar=U.dat$s)
 
-      if(option$V > 0){
-        EndIterStatement(iii, tracking.data, option)
-        }
+        EndIterStatement(iii, tracking.data, option) #only comments if verbosity
     }
-    message("Now ending or next iter")
-    message("memory:", lobstr::mem_used())
+
+    userMessage(option$verbosity, "Iteration concluded.")
+    userMessage(option$verbosity, paste0("Current memory usage: ",lobstr::mem_used()))
 
   }
 }
 
 EndIterStatement <- function(iter, td, option)
 {
-  cat('\n')
-  #Update message- need to change this....
-  updateLog(paste0('Iter', iter, ':'), option)
-  updateLog(paste0('Percent objective change = ', abs(td$obj[length(td$obj)-1]-td$obj[length(td$obj)])/td$obj[length(td$obj)]), option)
-  updateLog(paste0('Frobenius norm of (updated factor matrix - previous factor matrix) / number of factors  = ', td$V_change[length(td$V_change)]), option);
-  updateLog(paste0('U Sparsity = ', round(td$U_sparsities[length(td$U_sparsities)], digits = 3),
-                   '; V sparsity = ',  round(td$V_sparsities[length(td$V_sparsities)],digits = 3), '; ', td$K, ' factors remain'), option);
-  cat('\n')
+  if(option$verbosity > 1)
+  {
+    cat('\n')
+    #Update message- need to change this....
+    updateLog(paste0('Iter', iter, ':'), option)
+    updateLog(paste0('Percent objective change = ', abs(td$obj[length(td$obj)-1]-td$obj[length(td$obj)])/td$obj[length(td$obj)]), option)
+    updateLog(paste0('Frobenius norm of (updated factor matrix - previous factor matrix) / number of factors  = ', td$V_change[length(td$V_change)]), option);
+    updateLog(paste0('U Sparsity = ', round(td$U_sparsities[length(td$U_sparsities)], digits = 3),
+                     '; V sparsity = ',  round(td$V_sparsities[length(td$V_sparsities)],digits = 3), '; ', td$K, ' factors remain'), option);
+    cat('\n')
+  }else
+  {
+    cat('\n')
+    updateLog(paste0('Iter', iter, ':'), option)
+    updateLog(paste0('Percent objective change = ', abs(td$obj[length(td$obj)-1]-td$obj[length(td$obj)])/td$obj[length(td$obj)]), option)
+    cat('\n')
+  }
+
 }
 
 #' Generate regression explanatory variable and weighted elements
