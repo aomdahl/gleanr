@@ -191,8 +191,10 @@ readInCovariance <- function(p, name_order, diag_enforce = 1, coerce_threshold=1
 
     if(any(abs(w.in) > coerce_threshold))
     {
-	     message("Some entries in this matrix are greater than ",  coerce_threshold,". This is possible b/c LDSC is not constrained so can yield estimates that exceed.")
-    	     message("Default behavior is to set these values to +/-0.98. Modify the matrix directly if you want different behavior")
+      warning_string=paste0("Some entries in this sample sharing correlation matrix are greater than ",  coerce_threshold,
+                            ". This is possible is using estimates from XT-LDSC\n",
+                            "GLEANR will set these values to +/-0.98. Modify the matrix directly if you want different behavior")
+	     Warning(warning_string)
 	     s <- sign(w.in)
 	     w.in[abs(w.in) > 1] <- 0.98#Previosly set to 0.95, here to 0.98
 	     w.in <- w.in * s #and then return the sign
@@ -275,7 +277,7 @@ SpecifyWeightingScheme <- function(effects, all_ids,all_phenos, args)
       dplyr::filter(unlist(.[,1]) %in% all_ids) %>% quickSort(.,args)
     stopifnot(all(all_ids == W_se[,1]))
     W_se <- W_se[,-1] %>% orderColumnsByName(., all_phenos, force.ref = args$trait_names)
-    message("Dims of W_se are now:", dim(W_se))
+    userMessage(args$verbosity, paste0("Dims of W_se are now:", nrow(W_se), " x ", ncol(W_se)))
     W <- 1/ W_se
     X <- effects
 
@@ -500,13 +502,6 @@ SampleOverlapCovarHandler <- function(args, names, X)
     C <- C*sd.scaling
     write.table(C, file = paste0(args$output, "_scaledCovarMatrix.txt"), quote = FALSE, row.names = FALSE)
   }
-  #perform covariance matrix shrinkage
-
-  #option 1- perform shrinkage with block adjustment
-  #adjusted.C <- linearShrinkLWSimple(C, args$WLgamma)
-  #whitening.dat <- buildWhiteningMatrix(adjusted.C, ncol(X),blockify = args$block_covar)
-  #alternative option- blockify first, then shrink.
-  #Trying this, b/c sizes aren't obvious
   blocks <- create_blocks(C,cor_thr=args$block_covar)
   covar <- blockifyCovarianceMatrix(blocks, C)
   if(toupper(args$WLgamma) == "STRIMMER")
@@ -866,9 +861,9 @@ fillDefaultSettings <- function(curr.args)
 #' @examples
 writeRunReport <- function(argsin)
 {
-  message("Running GLEANER, with settings as follows:")
+  message("Running GLEANR, with settings as follows:")
   message("")
-  message("--------------- INPUT FILES ---------------")
+  message("------------------------------ INPUT FILES ------------------------------")
   message("Effect sizes: ", basename(argsin$gwas_effects))
   message("Uncertainty estimates: ", basename(argsin$uncertainty))
   message("Cohort overlap adjustment: ", basename(argsin$covar_matrix))
@@ -878,16 +873,16 @@ writeRunReport <- function(argsin)
   message("Z-score sample standard deviation: ", basename(argsin$sample_sd))
   message("")
 
-  message("--------------- INPUT SETTINGS ---------------")
+  message("------------------------------ INPUT SETTINGS ------------------------------")
   message("BIC convergence criteria: ", argsin$param_conv_criteria)
   message("BIC method: ", argsin$bic_var)
   message("K init: ", argsin$nfactors)
 
 
-  message("--------------- OUTPUT SETTINGS ---------------")
+  message("------------------------------ OUTPUT SETTINGS ------------------------------")
   message("Output directory: ", argsin$output)
   message("")
-  message("--------------------------------------------")
+  message("-----------------------------------------------------------------------------")
 }
 
 
@@ -903,7 +898,7 @@ writeRunReport <- function(argsin)
 #' @examples
 userMessage <- function(verbosity, message, thresh=1)
 {
-  if(verbosity > 1)
+  if(verbosity >= thresh)
   {
     message(message)
   }

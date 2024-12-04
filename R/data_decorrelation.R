@@ -98,8 +98,7 @@ buildWhiteningMatrix<- function(covar, dim, blockify = 0.2,...)
 
   if(containsBadBlocks(blocks, covar))
   {
-    message("Program will now terminate")
-    quit()
+    stop("Some blocks cannot be inverted (likely due to singularity). Recommend omitting highly correlated phenotypes. Program will now terminate")
   }
   #chol.no.diag <- (chol(covar, pivot=TRUE))
   #make sure covar is symmetric and pd.
@@ -113,13 +112,7 @@ buildWhiteningMatrix<- function(covar, dim, blockify = 0.2,...)
     #TRY Matrix::nearPD
     #https://www.rdocumentation.org/packages/Matrix/versions/1.5-4/topics/nearPD
   }
-  #chol.pd <- (chol(covar, pivot=TRUE))
-  #chol.pd.nopivot <- (chol(covar))
-#sometimes this transformation might modify the diagonal- force it to be 1
-  #diag(covar) <- 1
-  #chol.diag <- (chol(covar, pivot=TRUE))
-  #I think this was wrong...
-  #solve(t(chol(covar)))
+
   return(list("W_c" = solve((chol(covar))),"C_block"=covar))
 }
 #Non PD covariance matrix.....
@@ -196,7 +189,6 @@ adjustMatrixAsNeeded <- function(X, covar, whitener = NULL)
 linearShrinkLWSimple <- function(sample_cov_mat, gamma)
 {
   stopifnot(gamma >= 0 & gamma <= 1)
-  message("gamma set to ", gamma)
   # get the number of variables and observations
   p_n <- ncol(sample_cov_mat)
 

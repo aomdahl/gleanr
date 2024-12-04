@@ -159,14 +159,11 @@ initV <- function(X,W,W_c,option, preV = NULL, rg_ref = NULL)
 {
 	D = ncol(X)
 	cor_struct <- cor2(X)
-  #svd.r <- svd(cor_struct, nu = option$K)
   svd.corr <- svd(cor_struct)
   svd.dat <- corpcor::fast.svd(X)
+  #TODO- opportunity to boost speed of code, calculating SVDs multiple times here (and elsewhere)
+  X_=t(W_c %*% t(X*W))
 
-  message("Wastefully calculating all SVs now, change this later.")
-  X_=t(W_c %*% t(X*W)) #I think this is where the differences came from?
-
-  #X_ = X*W
   setK = selectInitK(option,X_)#,svs = svd.dat$d)
   if(ncol(svd.dat$v) < (setK - 1))
   {
@@ -179,10 +176,10 @@ initV <- function(X,W,W_c,option, preV = NULL, rg_ref = NULL)
 
     if(option[['f_init']] == 'ones_plain')
     {
-      message("Initializing ubiquitous factor with all ones...")
+      userMessage(option$verbosity, "Initializing ubiquitous factor with all ones...")
       V = cbind(rep(1, D), V);
     }	else if(option[['f_init']] == 'ones_eigenvect') {
-      message("1st column based on direction of svd of cor")
+      userMessage(option$verbosity, "1st column based on direction of svd of cor")
       ones <- sign(svd.corr$u[,1])
       #Reintroduced later- no problems here, and gives a nice speedup I think.
       if(option$svd_init)
@@ -194,7 +191,7 @@ initV <- function(X,W,W_c,option, preV = NULL, rg_ref = NULL)
 
     } else if(option[['f_init']] == 'plieotropy')
     {
-      message("1st column based svd of cor(|Z|), since plieotropy has no direction.")
+      userMessage(option$verbosity, "1st column based svd of cor(|Z|), since plieotropy has no direction.")
       ones <- svd.r$u
     }else if(grepl(pattern = "rg_ref",x = option$f_init) & !is.null(rg_ref)) #Use an RG reference file
     {
@@ -214,7 +211,7 @@ initV <- function(X,W,W_c,option, preV = NULL, rg_ref = NULL)
     }
     #make sure ones is scaled to be on the same scale as V
     ones <- ones / sqrt(sum(ones^2))
-    message("Scaling 1st col to be all ones...")
+    userMessage(option$verbosity, "Scaling 1st col to have unit length...")
     stopifnot(abs(sum(ones^2) - 1) < 1e-12)
     V = cbind(ones, V);
   } else #you pre-provide the first F.
@@ -243,12 +240,12 @@ initU <- function(X,W,option, prevU = NULL)
     ones = rep(1, nsnps)
 
   }	else if(option$u_init == 'ones_eigenvect') {
-    message("1st column based on direction of svd of cor")
+    userMessage(option$verbosity, "1st column based on direction of svd of cor")
     cor_struct <- cor2(t(X))
     svd <- irlba::irlba(cor_struct, 1) #fortunately its symmetric, so  U and V are the same here!
     ones <- sign(svd$u)
   } else if(option$u_init == 'plieotropy') {
-    message("1st column based svd of cor(|Z|), since plieotropy has no direction.")
+    userMessage(option$verbosity, "1st column based svd of cor(|Z|), since plieotropy has no direction.")
     cor_struct <- cor2(abs(t(X)))
     svd <- irlba(cor_struct, 1) #fortunately its symmetric, so  U and V are the same here!
     ones <- svd$u
@@ -461,7 +458,7 @@ ConvergenceConditionsMet <- function(iter,X,W,W_c, U,V,tracker,option, initV = F
   #TODO: add condition to see if it has a prior on it or not. This will shorten our number of iterations.
   if((obj.change.percent <= as.numeric(option[['conv0']])) & (length(tracker$obj) > 2)){
     updateLog(("Objective function change threshold achieved!"), option)
-    updateLog(paste0('Objective function converges at iteration ', iter), option);
+    updateLog(paste0('Objective function converged at iteration ', iter), option);
     #If objective change is negative, must end....
     return(conv.opts[[1]])
   }
@@ -567,12 +564,11 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
   trait.var <- matrix(NA, option[['iter']], ncol(X))
   i.c <- 1
   for (iii in seq(1, option[['iter']])){ #start the iterations (although technically, we have done 1 already.)
-    message(paste0("Currently on iteration ", iii))
+    userMessage(option$verbosity, paste0("Beginning on iteration ", iii))
     iteration.ll.total <- 0
     ## If we are doing an autofit setting....
-    message("fitting V..")
+    userMessage(option$verbosity, "Now fitting V...")
     V.new = FitVWrapper(X, W,W_c, U, option,reg.elements=reg.elements)#, formerV = V);  #returns V scaled, with S  #CONFIRM
-    message("V fit")
     iteration.ll.total <- V.new$total.log.lik
     ll.tracker <- c(ll.tracker, V.new$total.log.lik)
     penalty.tracker <- c(penalty.tracker, V.new$penalty)
@@ -587,13 +583,10 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
 
     dev.score <- c(dev.score, V.new$SSE)
 
-    #More crap to follow the objective
-    #if(option$debug)
-  message("updating inter run stuff")
-      es.objective <- c(es.objective, GetStepWiseObjective(X,W,W_c,V.prev,V*V.new$s, U,"U",option));
-      em.objective[[(i.c)]] <- compute_obj(X,W,W_c, U,V,option, globalLL=TRUE, decomp = TRUE, scalar=V.new$s)
-      s.weight.tracker[[i.c]] <- V.new$s
-      i.c <- i.c + 1
+    es.objective <- c(es.objective, GetStepWiseObjective(X,W,W_c,V.prev,V*V.new$s, U,"U",option));
+    em.objective[[(i.c)]] <- compute_obj(X,W,W_c, U,V,option, globalLL=TRUE, decomp = TRUE, scalar=V.new$s)
+    s.weight.tracker[[i.c]] <- V.new$s
+    i.c <- i.c + 1
 
     if(option$traitSpecificVar)
     {
@@ -611,6 +604,7 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
     #message("Finished storing data, starting U fit.")
     #message("memory: ", lobstr::mem_used())
     ## update L
+    userMessage(option$verbosity, "Now fitting U...")
     U.new <- FitUWrapper(X,W,W_c,V, option,r.v = trait.var[iii,],reg.elements=reg.elements)#, prevU = U) #returns U scaled, with S  #CONFIRM
     U.prev <- U
     U = U.new$U #confirm- its unit norm?
@@ -656,9 +650,8 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
                                                    loglik = iteration.ll.total, scalar = U.dat$s)
     if(convergence.status %in% c("converged", "exceeded"))
     {
-      message("Convergence criteria achieved.")
       cat('\n')
-      updateLog(paste0('Total time used for optimization: ',  round(difftime(Sys.time(), tStart0, units = "mins"), digits = 3), ' min'), option);
+      updateLog(paste0('Total time used for model fitting: ',  round(difftime(Sys.time(), tStart0, units = "mins"), digits = 3), ' min'), option);
       cat('\n')
       if(convergence.status == "exceeded")
       {
@@ -700,23 +693,17 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
 
 EndIterStatement <- function(iter, td, option)
 {
-  if(option$verbosity > 1)
-  {
-    cat('\n')
+  v.set <- option$verbosity
+  cat('\n')
     #Update message- need to change this....
-    updateLog(paste0('Iter', iter, ':'), option)
-    updateLog(paste0('Percent objective change = ', abs(td$obj[length(td$obj)-1]-td$obj[length(td$obj)])/td$obj[length(td$obj)]), option)
-    updateLog(paste0('Frobenius norm of (updated factor matrix - previous factor matrix) / number of factors  = ', td$V_change[length(td$V_change)]), option);
-    updateLog(paste0('U Sparsity = ', round(td$U_sparsities[length(td$U_sparsities)], digits = 3),
-                     '; V sparsity = ',  round(td$V_sparsities[length(td$V_sparsities)],digits = 3), '; ', td$K, ' factors remain'), option);
+    userMessage(v.set, paste0('Iter', iter, ':'),thresh = 0)
+    obj.delta <- round(abs(td$obj[length(td$obj)-1]-td$obj[length(td$obj)])/td$obj[length(td$obj)], digits = 4)
+    userMessage(v.set, paste0('Proportion objective change = ',obj.delta) , thresh=0)
+    userMessage(v.set, paste0('Frobenius norm of (updated factor matrix - previous factor matrix) / number of factors  = ', td$V_change[length(td$V_change)]))
+    userMessage(v.set, paste0('U Sparsity = ', round(td$U_sparsities[length(td$U_sparsities)], digits = 3),
+                              '; V sparsity = ',  round(td$V_sparsities[length(td$V_sparsities)],digits = 3), '; ', td$K, ' factors remain'))
     cat('\n')
-  }else
-  {
-    cat('\n')
-    updateLog(paste0('Iter', iter, ':'), option)
-    updateLog(paste0('Percent objective change = ', abs(td$obj[length(td$obj)-1]-td$obj[length(td$obj)])/td$obj[length(td$obj)]), option)
-    cat('\n')
-  }
+
 
 }
 
