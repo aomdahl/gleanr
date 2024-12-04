@@ -23,7 +23,7 @@ UpdateAndCheckSparsityParam <-  function(prev.list, new, errorReport = FALSE)
 
 	 prev <- prev.list[length(prev.list)]
 	  new <- new[1]
-	if( errorReport & !is.null(prev.list) > 1 & (abs(new-prev)/prev > 1.5))
+	if(errorReport & !is.null(prev.list) > 1 & (abs(new-prev)/prev > 1.5))
 	  {
 	    message("WARNING: large jump in sparsity parameter encountered....")
 	    message("Current: ", prev)
@@ -175,7 +175,7 @@ updateRecDat <- function(rec.dat, mat.fit, matrix_on, iter,X,W,W_c, optimal_comp
   if(matrix_on == "U")
   {
     curr.lambda <- rec.dat$lambda.s[length(rec.dat$lambda.s)]
-    rec.dat$alphas <- UpdateAndCheckSparsityParam(rec.dat$alphas, mat.fit$alpha.sel, errorReport = TRUE)
+    rec.dat$alphas <- UpdateAndCheckSparsityParam(rec.dat$alphas, mat.fit$alpha.sel, errorReport = option$verbosity)
     rec.dat$bic.a <- c(rec.dat$bic.a,mat.fit$bic); rec.dat$alpha.s <- c(rec.dat$alpha.s,mat.fit$alpha.sel)
     rec.dat$U_sparsities = c(rec.dat$U_sparsities, matrixSparsity(mat.fit$U, ncol(X)));
     rec.dat$sparsity.obj[[paste0("U_", iter)]] <- computeObjIntermediate(X, W,W_c, mat.fit$U, optimal_complement, option,mat.fit$alpha.sel,curr.lambda, decomp = TRUE, loglik = TRUE) #should happen before drop empty colums
@@ -187,7 +187,7 @@ updateRecDat <- function(rec.dat, mat.fit, matrix_on, iter,X,W,W_c, optimal_comp
     curr.alpha <- rec.dat$alpha.s[length(rec.dat$alpha.s)]
     rec.dat$lambda.s <- c(rec.dat$lambda.s,mat.fit$lambda.sel) #selected lambda to path
     rec.dat$V_sparsities = c(rec.dat$V_sparsities, matrixSparsity(mat.fit$V, ncol(X))); #Sparsity of V
-    rec.dat$lambdas <- UpdateAndCheckSparsityParam(rec.dat$lambdas, mat.fit$lambda.sel, errorReport = TRUE); rec.dat$bic.l <- c(rec.dat$bic.l,mat.fit$bic) #lambdas and bic scores
+    rec.dat$lambdas <- UpdateAndCheckSparsityParam(rec.dat$lambdas, mat.fit$lambda.sel, errorReport = option$verbosity); rec.dat$bic.l <- c(rec.dat$bic.l,mat.fit$bic) #lambdas and bic scores
     #computeObjIntermediate <- function(X,W,W_c,U,V,option,alpha,lambda,...)computeObjIntermediate <- function(X,W,W_c,U,V,option,alpha,lambda,...)
     rec.dat$sparsity.obj[[paste0("V_", iter)]] <- computeObjIntermediate(X, W,W_c, optimal_complement, mat.fit$V,option,curr.alpha,mat.fit$lambda.sel, decomp = TRUE, loglik = TRUE) #Objective calculation
     rec.dat$Ks <- c(rec.dat$Ks, ncol(DropEmptyColumns(mat.fit$V,option)$updatedMatrix)) #Track K HEREEEe
@@ -720,8 +720,6 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", gwasmfiter =5,
   {
     C = diag(ncol(X))
   }
-  message("")
-  message("------------------------------ INPUT FILE PROCESSING ------------------------------")
 
   d <- initializeGLEANR(X,W,C, snp.ids, trait.names, K=ifelse(use.init.k, K, 0),
                         init.mat=init.mat, covar_shrinkage=shrinkWL,covar_se=covar_se,is.sim=is.sim,...) #Either use specified, or prune down as we

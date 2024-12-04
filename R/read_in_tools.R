@@ -601,6 +601,8 @@ selectInitK <- function(args,X_, evals = NULL)
 #' @examples
 readInSettings <- function(args)
 {
+  message("")
+  message("------------------------------ INPUT FILE PROCESSING ------------------------------")
  option <- list()
 	#careful with this environment passed by reference- we do object copying versions so need to be consisgtent.
 	#larger changes required if you're going to use this-- need to change some of the BIc functions

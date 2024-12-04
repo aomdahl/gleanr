@@ -446,7 +446,7 @@ ConvergenceConditionsMet <- function(iter,X,W,W_c, U,V,tracker,option, initV = F
   }
  #If we have completed at least 1 iteration and we go up, end it.
   #First iteration has objective change of 0.
-  userMessage(option$verbosity,paste0("Current objective change: ",obj.change.percent ))
+  userMessage(option$verbosity,paste0("Current objective change: ",round(obj.change.percent,digits=4 )))
   if(objective_change < 0 & option[['conv0']] > 0) #& length(tracker$obj) > 2)
   {
     message("warning: negative objective")
