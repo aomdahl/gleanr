@@ -15,21 +15,21 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
+    combinat,
     coop,
+    corpcor,
     data.table,
     doParallel,
     dplyr,
-    elasticnet,
     foreach,
     glmnet,
     irlba,
     logr,
     magrittr,
-    penalized,
-    plyr,
+    Matrix,
+    matrixcalc,
     RcppArmadillo,
     RcppEigen,
     stringr,
-    svMisc,
     tidyr
 VignetteBuilder: knitr
