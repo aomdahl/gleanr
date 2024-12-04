@@ -33,7 +33,7 @@ quickSort <- function(tab, option, col = 1)
 readInParamterSpace <- function(args)
 {
   #Read in the hyperparameters to explore
-  if(args$MAP_autofit > -1 | args$auto_grid_search)
+  if(args$MAP_autofit > -1 | args$auto_grid_search) #DEPRECATED
   {
     updateLog("Sparsity parameters will be proposed by software.")
     alphas_og <- c(NA)
@@ -81,14 +81,13 @@ cleanUp <- function(matin, type = "beta")
 #' @param W
 #' @param id.list
 #' @param na_thres
-#' @param is.sim
 #' @param na.threshold
 #'
 #' @return a list of updated input items (X,W,id.list) reflecting the drops/filtering
 #' @export
 #'
 #' @examples
-matrixGWASQC <- function(X, W, id.list, na_thres = 0.5, is.sim = FALSE, na.threshold=0.7)
+matrixGWASQC <- function(X, W, id.list, na_thres = 0.5, na.threshold=0.7)
 {
   #Now that we have the SE and the B, go ahead and filter out bad snps....
   #Clean up NAs, etc.
@@ -400,7 +399,7 @@ readInData <- function(args)
   }
 
   #remove NAs, extreme values.
-  r <- matrixGWASQC(X,W,all_ids, is.sim = args$simulation)
+  r <- matrixGWASQC(X,W,all_ids)
   X <- r$clean_X;  W <- r$clean_W; all_ids <- r$snp.list
   if(length(r$dropped_cols) > 1 || r$dropped_cols != 0)
   {
@@ -611,7 +610,6 @@ readInSettings <- function(args)
 	#careful with this environment passed by reference- we do object copying versions so need to be consisgtent.
 	#larger changes required if you're going to use this-- need to change some of the BIc functions
 	# option <- listenv::listenv()
-  option$calibrate_k <- args$calibrate_k
   option[['K']] <- args$nfactors
   option[['iter']] <- args$niter
   option[['convF']] <- 0
@@ -622,9 +620,9 @@ readInSettings <- function(args)
   option[["plots"]] <- args$overview_plots
   option[['disp']] <- FALSE
   #F matrix initialization
-  option[['f_init']] <- args$init_F
+  option[['f_init']] <- args$init_V
   option[['epsilon']] <- as.numeric(args$epsilon)
-  option[['u_init']] <- args$init_L
+  option[['u_init']] <- args$init_U
   option[["preinitialize"]] <- FALSE
   option[['carry_coeffs']] <- FALSE
   option[["glmnet"]] <- FALSE
@@ -636,7 +634,6 @@ readInSettings <- function(args)
   #option[["gls"]] <- ifelse(args$covar_matrix != "", TRUE, FALSE)
   option$gls <- FALSE
   option[["covar"]] <- args$covar_matrix
-  option$auto_grid_search <- args$auto_grid_search
   option$sort <- args$sort
   if(args$simulation)
   {
@@ -698,27 +695,26 @@ readInSettings <- function(args)
 #####
 ## Setting defaults helpful for running elsewhere
 
-defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objective = 0.001,min_bic_search_iter=5 )
+defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objective = 0.001,min_bic_search_iter=5, is_sim=FALSE )
 {
   args <- defaultInteractiveArgs()
   args$niter <- 200
   args$uncertainty <- ""
-
   args$gwas_effects <- ""
   args$nfactors <- K
   args$scale_n <- ""
   args$output <- "/scratch16/abattle4/ashton/snp_networks/scratch/testing_gwasMF_code/matrix_simulations/RUN"
   opath <- "gwasMF"
-  args$simulation <- TRUE
+  args$simulation <- is_sim
   args$sort <- FALSE #b/c default for sims.
   args$converged_obj_change <- conv_objective
   message("set convergence objective to ",args$converged_obj_change)
   args$std_coef <- FALSE
-  args$std_y <- FALSE
+  args$std_y <- TRUE  #Updated 12/04
   args$min.bic.search.iter <- min_bic_search_iter
   if(init.mat == "U")
   {
-    args$init_L <- "std"
+    args$init_U <- "std"
   }
   args$fixed_first <- fixed_ubiq #trying to see if this help- IT DOENS'T really appear to matter very much.
   args
@@ -733,27 +729,23 @@ DefaultSeed2Args <- function()
   args$fixed_first <- TRUE
   args$genomic_correction <- "/scratch16/abattle4/ashton/snp_networks/custom_l1_factorization/gwas_extracts/ukbb_GWAS_h2-0.1_rg-0.9/Lambda_gc.tsv"
   args$nfactors <- 15
-  args$calibrate_k <- FALSE
   args$trait_names = ""
   args$niter <- 10
   args$alphas <- ""
   args$lambdas <- ""
   args$autofit <- -1
-  args$auto_grid_search <- TRUE
   args$ncores <- 1
-  args$IRNT <- FALSE
   args$weighting_scheme = "B_SE"
   args$output <- "/scratch16/abattle4/ashton/snp_networks/scratch/testing_gwasMF_code/model_selection/bic_autofit/"
   args$converged_obj_change <- 1
   args$scaled_sparsity <- TRUE
   args$posF <- FALSE
-  args$init_F <- "ones_eigenvect"
-  args$init_L <- ""
+  args$init_V <- "ones_eigenvect"
+  args$init_U <- ""
   args$epsilon <- 1e-8
   args$verbosity <- 1
   args$scale_n <- ""
   args$MAP_autofit <- -1
-  args$auto_grid_search <- FALSE
   args$regression_method = "penalized"
   args$converged_obj_change <- 0.001
   args$sort <- TRUE
@@ -770,29 +762,25 @@ YuanSimEasy <- function()
   args$genomic_correction <- ""
   args$overview_plots <- FALSE
   args$nfactors <- 5
-  args$calibrate_k <- FALSE
   args$trait_names = ""
   args$niter <- 100
   args$simulation <- TRUE
   args$alphas <- ""
   args$lambdas <- ""
   args$autofit <- -1
-  args$auto_grid_search <- FALSE
   args$ncores <- 1
-  args$IRNT <- FALSE
   args$weighting_scheme = "B_SE"
   args$output <- "/scratch16/abattle4/ashton/snp_networks/custom_l1_factorization/yuan_simulations/"
   args$converged_obj_change <- 1
   args$scaled_sparsity <- TRUE
   args$posF <- FALSE
-  args$init_F <- "ones_eigenvect"
-  args$init_L <- ""
+  args$init_V <- "ones_eigenvect"
+  args$init_U <- ""
   args$epsilon <- 1e-8
   args$verbosity <- 1
   args$sort <- FALSE
   args$scale_n <- ""
   args$MAP_autofit <- -1
-  args$auto_grid_search <- FALSE
   args$regression_method = "penalized"
   args$converged_obj_change <- 0.05 #this is the percent change from one to the next.
   args$prefix <- ""
@@ -800,57 +788,39 @@ YuanSimEasy <- function()
   args$svd_init <- FALSE
   args
 }
-defaultInteractiveArgs <- function()
+defaultInteractiveArgs <- function() #This used to be to update data with the udler data directly.
 {
+  #Set first
   args <- list()
   args$covar_matrix = ""
-  #args$gwas_effects <-"/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/beta_signed_matrix.tsv"
-  #args$uncertainty <- "/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/se_matrix.tsv"
   args$gwas_effects <-""
   args$uncertainty <- ""
   args$fixed_first <- TRUE
   args$genomic_correction <- ""
   args$overview_plots <- FALSE
-  args$nfactors <- 57
+  args$nfactors <- "GRID"
   args$trait_names = ""
   args$niter <- 200
-  args$alphas <- ""
-  args$lambdas <- ""
-  args$autofit <- -1
-  args$auto_grid_search <- TRUE
   args$ncores <- 1
-  args$svd_init <- TRUE
-  args$IRNT <- FALSE
   args$weighting_scheme = "B_SE"
-  #args$output <- "/scratch16/abattle4/ashton/snp_networks/custom_l1_factorization/results/udler_original/bic_version/"
   args$output <- ""
   args$converged_obj_change <- 1
-  args$scaled_sparsity <- TRUE
-  args$posF <- FALSE
-  args$std_y <- FALSE
-  args$init_F <- "ones_eigenvect"
-  args$init_L <- ""
   args$epsilon <- 1e-8
   args$verbosity <- 1
-  args$scale_n <- "/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/sample_counts_matrix.tsv"
-  args$MAP_autofit <- -1
-  args$auto_grid_search <- FALSE
-  args$regression_method = "glmnet"
   args$converged_obj_change <- 0.001 #this is the percent change from one to the next.
-  args$prefix <- ""
   args$bic_var <- "sklearn_eBIC"
   args$param_conv_criteria <- "BIC.change"
+
   #redundant with fillDefaultSettings:
-  args$std_coef <- FALSE
-  args$sort <- TRUE
-  args$calibrate_k <- FALSE
+  fillDefaultSettings(args)
   args
 }
 
-#Try another selection method..
-#https://rdrr.io/github/kevinblighe/PCAtools/src/R/randomMethods.R
-#kevinblighe/PCAtools
-#I take no credit for this work whatsoever.
+#Old udler file paths:
+#args$scale_n <- "/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/sample_counts_matrix.tsv"
+#args$gwas_effects <-"/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/beta_signed_matrix.tsv"
+#args$uncertainty <- "/scratch16/abattle4/ashton/snp_networks/scratch/udler_td2/processed_data/se_matrix.tsv"
+#args$output <- "/scratch16/abattle4/ashton/snp_networks/custom_l1_factorization/results/udler_original/bic_version/"
 
 #' Filling in settings, all relics of a past run.
 #' TODO: basically get rid of all this
@@ -864,28 +834,22 @@ fillDefaultSettings <- function(curr.args)
 {
   curr.args$std_coef <- FALSE
   curr.args$sort <- TRUE #what is this doing? sorts the snps I think...
-  curr.args$calibrate_k <- FALSE
   curr.args$alphas <- ""
   curr.args$lambdas <- ""
   curr.args$autofit <- -1
-  curr.args$auto_grid_search <- TRUE
   #curr.args$cores <- 1
   curr.args$svd_init <- TRUE
-  curr.args$IRNT <- FALSE
   curr.args$scaled_sparsity <- TRUE
   curr.args$posF <- FALSE
-  curr.args$std_y <- FALSE
-  curr.args$init_F <- "ones_eigenvect"
-  curr.args$init_L <- ""
+  curr.args$init_V <- "ones_eigenvect"
+  curr.args$init_U <- ""
   curr.args$MAP_autofit <- -1
-  curr.args$auto_grid_search <- FALSE
   curr.args$regression_method = "glmnet"
   curr.args$prefix <- ""
   curr.args$scale_n <- ""
   curr.args$output <- curr.args$outdir
   curr.args$simulation <- FALSE
-  curr.args$std_coef <- FALSE
-  curr.args$std_y <- FALSE
+  curr.args$std_y <- TRUE #Updated from FALSE, 12/04
   #TODO: add some checks for missing or cnflicing parameters
   curr.args
 }

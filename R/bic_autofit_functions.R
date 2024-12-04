@@ -366,7 +366,7 @@ DropEmptyColumnsPipe <- function(lin,options)
 #' @param X NxM matrix of SNP effect sizes
 #' @param W- weights from Standard errors
 #' @param C - cohort overlap estimates
-#' @param snp.ids - list of SNP ids, corresponds to order in X
+#' @param snp.ids - list of SNP ids, corresponds to order in X∂
 #' @param trait.names - trait names to use, corresponds to order in X
 #' @param K - specify a K if you would like.
 #' @param init.mat- which matrix to initialize to
@@ -379,7 +379,7 @@ DropEmptyColumnsPipe <- function(lin,options)
 #' @export
 #'
 #' @examples
-initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", covar_shrinkage=-1,enforce_blocks=TRUE,covar_se=NULL, ...)
+initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", covar_shrinkage=-1,enforce_blocks=TRUE,covar_se=NULL,is.sim=FALSE, ...)
 {
   #A few quick sanity checks:
   if(all(apply(X, 2, var) == 0) | all(apply(X, 1, var) == 0))
@@ -391,7 +391,7 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   {
     warning("Columns of standard errors contain no variance. May not be valid")
   }
-  args <- defaultSettings(K=K,init.mat = init.mat,...)
+  args <- defaultSettings(K=K,init.mat = init.mat,is_sim=is.sim,...)
   args$pve_init <- FALSE
   option <- readInSettings(args)
   print(option)
@@ -401,12 +401,6 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   option$lambda1 <- 1e-10
   option$block_covar <- 0.2
   output <- args$output
-  #log.path <- paste0(args$output, "gwasMF_log.", Sys.Date(), ".txt")
-  #lf <- logr::log_open(log.path, show_notes = FALSE)
-  #options("logr.compact" = TRUE)
-  #options("logr.notes" = FALSE)
-  #Read in the hyperparameters to explore
-  #hp <- readInParamterSpace(args)
   hp <- NA
   all_ids <-snp.ids; names <- trait.names
   initk <- option$K
@@ -727,11 +721,13 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", gwasmfiter =5,
     C = diag(ncol(X))
   }
   d <- initializeGLEANR(X,W,C, snp.ids, trait.names, K=ifelse(use.init.k, K, 0),
-                        init.mat=init.mat, covar_shrinkage=shrinkWL,covar_se=covar_se,...) #Either use specified, or prune down as we
+                        init.mat=init.mat, covar_shrinkage=shrinkWL,covar_se=covar_se,is.sim=is.sim,...) #Either use specified, or prune down as we
   option <- d$options; args <- d$args; hp <- d$hp; all_ids <- d$all_ids; names <- d$namesl; W_c <- d$W_c
   if(is.sim)
   {
     option$Kmin <- K
+    option$bic.var="sklearn_eBIC"
+    option$K <- "GRID"
     #I think here we previously had forced K to be GRID and sklearn bic for simulations
   }
   option$scale <- scale.mats
