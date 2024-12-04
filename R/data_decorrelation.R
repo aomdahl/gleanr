@@ -238,8 +238,9 @@ strimmerCovShrinkage <- function(args, covar, covar_se, sd.scaling=1)
   gamma = sum(covar_se^2) / sum(offdiag^2) #squaring covar_se since we want variance, not SE
   print(gamma)
   args$WLgamma <- gamma
-  message("Selected gamma is:", gamma)
-  message("Norm prior to adjustment: ", norm(covar, "F"))
+
+  userMessage(args$verbosity, paste0("Selected shrinkage gamma is: ", gamma))
+  userMessage(args$verbosity, paste0("Norm prior to adjustment: ", norm(covar, "F")))
   linearShrinkLWSimple(covar, gamma)
 }
 

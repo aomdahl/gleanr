@@ -112,13 +112,14 @@ matrixGWASQC <- function(X, W, id.list, na_thres = 0.5, na.threshold=0.7)
   #We aren't including this anymore
   #chi.thresh = 300
   chi.thresh = max(X*W^2, na.rm=TRUE)+10
-  drop.chi2 <- apply(X*W,2, function(x) x^2 > chi.thresh)
-  drop.chi2[drop.nas] <- FALSE
-  all.drops <- drop.chi2 | drop.nas
+  #drop.chi2 <- apply(X*W,2, function(x) x^2 > chi.thresh)
+  #drop.chi2[drop.nas] <- FALSE
+  #all.drops <- drop.chi2 | drop.nas
+  all.drops <- drop.nas
   #all.drops <- drop.nas
   #do we just zero those ones out or drop them all together?
   #if more than 15% of SNPs for a particular trait are in this category, drop the trait instead
-  too.many.drops <- unlist(lapply(1:ncol(drop.chi2), function(i) sum(drop.chi2[,i]) + sum(drop.nas[,i])))
+  too.many.drops <- unlist(lapply(1:ncol(all.drops), function(i) sum(drop.nas[,i])))
   drop.cols <- c()
   if(any(too.many.drops > 0.20 * nrow(X))) #greater than 20%
   {
@@ -136,7 +137,7 @@ matrixGWASQC <- function(X, W, id.list, na_thres = 0.5, na.threshold=0.7)
   updateLog("Cells with invalid entries (NA, or excessive Chi^2 stat) will be given a weight of 0.")
   removed.cols <- length(drop.cols) * nrow(X)
   updateLog(paste0(sum(all.drops), " out of ", (nrow(all.drops) * ncol(all.drops)), " total cells are invalid and will be 0'd."))
-  updateLog(paste0("  DEPRECATED: Zeroing out ", sum(drop.chi2), " entries with extreme chi^2 stats > ", chi.thresh))
+  #updateLog(paste0("  DEPRECATED: Zeroing out ", sum(drop.chi2), " entries with extreme chi^2 stats > ", chi.thresh))
   updateLog(paste0("   Zeroing out ", sum(drop.nas), " entries with NA"))
   W[all.drops] <- 0
   X[drop.nas] <- 0 #technically we don't need to drop them here, if they are being given a weight of 0. But if they are NAs we need to give them a value so they don't killus.
@@ -177,14 +178,15 @@ readInCovariance <- function(p, name_order, diag_enforce = 1, coerce_threshold=1
   if(p == "" | is.null(p)) {return(NULL)}
   else
   {
-    message("We make the strong assumption that the matrix rows and columns are in the same order. (check by looking at diags)")
     message("Enforcing the column order to be the same as input file name order")
-
     w.in <- as.matrix(data.table::fread(p, check.names = TRUE))
     row.names(w.in) <- colnames(w.in)
     if(!is.na(diag_enforce))
     {
-      stopifnot(all(diag(as.matrix(w.in)) == diag_enforce))
+      if(all(diag(as.matrix(w.in)) != diag_enforce))
+      {
+        stop("Diagonal elements of covariance data matrix don't match expectations. Please ensure rows and columns are in the same order such that diagonal elements correspond to the same trait.")
+      }
     }
 
     if(any(abs(w.in) > coerce_threshold))
@@ -269,7 +271,6 @@ SpecifyWeightingScheme <- function(effects, all_ids,all_phenos, args)
 
   } else if(args$weighting_scheme == "B_SE")
   {
-    message("Scaling by 1/SE.")
     W_se <- data.table::fread(args$uncertainty, check.names = TRUE) %>%
       dplyr::filter(unlist(.[,1]) %in% all_ids) %>% quickSort(.,args)
     stopifnot(all(all_ids == W_se[,1]))
@@ -370,7 +371,7 @@ readInData <- function(args)
     names <- unlist(names(effects)[-1]) %>% make.names(.)
   } else{
     message("Using the provided trait names, and assuming all files have columns in the correct order.")
-    message("It is your responsibility to verify this.")
+    message("It is the user's responsibility to verify this.")
     names <- scan(args$trait_names, what = character(), quiet = TRUE) %>% make.names(.)
   }
   if(length(names) > (ncol(effects) - 1))
@@ -514,7 +515,7 @@ SampleOverlapCovarHandler <- function(args, names, X)
 	#se.path= gsub(args$covar_matrix, pattern="gcov_int.tab.csv", replacement = "gcov_int_se.tab.csv")
     C_se <- readInCovariance(se.path, diag_enforce = NA)
     adjusted.C <- strimmerCovShrinkage(args, covar,C_se, sd.scaling)
-   message("Norm following adjustment: ", norm(adjusted.C, "F"))
+    userMessage(args$verbosity, paste0("Norm following adjustment: ", norm(adjusted.C, "F")))
   }else if(toupper(args$WLgamma) == "MLE")
   {
 	  message("MLE version isn't implemented, don't use it.")
@@ -887,4 +888,23 @@ writeRunReport <- function(argsin)
   message("Output directory: ", argsin$output)
   message("")
   message("--------------------------------------------")
+}
+
+
+#' Helper for controling how much output users get when running gleanr
+#'
+#' @param verbosity level to use- 1 means little, greater than 1 means everything
+#' @param message message to share
+#' @param thresh threshold to share message. Some messges are essential and so will be shared (thresh = 0)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+userMessage <- function(verbosity, message, thresh=1)
+{
+  if(verbosity > 1)
+  {
+    message(message)
+  }
 }

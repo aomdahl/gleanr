@@ -22,8 +22,8 @@ DefineSparsitySpaceInit <- function(X, W,W_c, W_ld, option, burn.in = 5,reg.elem
   #for testing purposes
   Xint <- as.matrix(X)
   Wint <-as.matrix(W)
-  message("initializing v")
-  message("dropped arguments, so can't pass rg")
+  message("Initializing V matrix")
+  #message("dropped arguments, so can't pass rg")
   V.dat <- initV(X,W,W_c,option)
   V<-V.dat$V
 
