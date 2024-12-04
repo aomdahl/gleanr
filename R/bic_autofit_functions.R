@@ -35,15 +35,17 @@ UpdateAndCheckSparsityParam <-  function(prev.list, new, errorReport = FALSE)
 
 #' Updated tracking of the optimal learned parameters from gleaner
 #'
+#' @param min.dat tracking data so far
 #' @param U learned at settings minimizing BIC_alpha at iteration `iter_tag`. Should NOT have 0 columns dropped, but be in K dimension the same as V
 #' @param V learned at settings minimizing BIC_lambda at iteration `iter_tag` Should NOT have 0 columns dropped, but be in K dimension the same as U
 #' @param alpha setting minimizing BIC_alpha at iteration `iter_tag`
 #' @param lambda setting minimizing BIC_lambda at iteration `iter_tag`
 #' @param bic_a minimal score at iteration `iter_tag`
 #' @param bic_l minimal score at iteration `iter_tag`
-#' @param bic_a_dat: all the data for that score, including the scaling term and the other pieces
-#' @param bic_l_dat: all the data for that score, scaling term and other pieces
-#' @param iter_tag
+#' @param bic_a_dat all the data for that score, including the scaling term and the other pieces
+#' @param bic_l_dat all the data for that score, scaling term and other pieces
+#' @param iter_tag a string value tag to specify which iteration we are on (e.g. V1, U2, etc.)
+#' @param init indicate if this is being called for the first time (TRUE) or not (FALSE) to initialize the object.
 #'
 #' @return a list containing the optimal learned parameters (U,V,alpha,lambda) and the associated BIC
 #' @export
@@ -53,7 +55,6 @@ trackMinParam <- function(min.dat,U,V,alpha,lambda,bic_a,bic_l,bic_a_dat, bic_l_
 {
   if(init)
   {
-    message("Initializing parameter tracking")
     return(list("optimal.u"=NA, "optimal.v"=NA,
                 "alpha"=NA, "lambda"=NA, "bic_a"=Inf,
                 "bic_l"=Inf, min_sum=Inf, iter="",
@@ -62,8 +63,7 @@ trackMinParam <- function(min.dat,U,V,alpha,lambda,bic_a,bic_l,bic_a_dat, bic_l_
     stopifnot(ncol(U) == ncol(V)) #this should be true.
     if(length(min.dat)==1)
     {
-      message("Error- should not occur")
-      quit()
+      stop("Error- passed in a length 1 tracking matrix. Should not occur, may be some initialization error")
     } else {
       #Special case: all of U or all of V is empty.
       if(CheckUEmpty(U) & is.infinite(bic_l)) #U is empty and we have no score for V
@@ -663,7 +663,9 @@ extractMinBicDat <- function(bic.dat, min.index)
 gwasML_ALS_Routine <- function(option, X, W,W_c, optimal.init, maxK=0, opath = "", no.prune = FALSE,reg.elements=NULL,...)
 {
 
-  message(paste0("Starting at k:", option$K))
+  message("")
+  message("------------------------------ GLEANR MODEL FITTING ------------------------------")
+  userMessage(option$verbosity, paste0("Starting at k:", option$K))
   option$debug <- TRUE
   reg.run <- update_UV(X, W, W_c, option, preV = optimal.init, reg.elements =reg.elements,... )
   if(no.prune){return(reg.run)}
@@ -673,7 +675,6 @@ gwasML_ALS_Routine <- function(option, X, W,W_c, optimal.init, maxK=0, opath = "
     {
       message("More columns identified than specified by the user.")
       message("gleanr now parsing down to desired number of factors")
-
     }
     if(ncol(reg.run$V) < maxK)
     {
@@ -683,7 +684,7 @@ gwasML_ALS_Routine <- function(option, X, W,W_c, optimal.init, maxK=0, opath = "
   } else {
     maxK <- ncol(reg.run$V) #If maxK is 0, basically ju
   }
-  #Note that no pruning takes place if maxK == ncol
+    #Note that no pruning takes place if maxK == ncol
     reg.run <- PruneNumberOfFactors(X,W,W_c,reg.run,option$Kmin, maxK, option)
     reg.run <- OrderEverythingByPVE(reg.run,X,W, W_c,option, jointly = FALSE)
 
@@ -719,6 +720,9 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", gwasmfiter =5,
   {
     C = diag(ncol(X))
   }
+  message("")
+  message("------------------------------ INPUT FILE PROCESSING ------------------------------")
+
   d <- initializeGLEANR(X,W,C, snp.ids, trait.names, K=ifelse(use.init.k, K, 0),
                         init.mat=init.mat, covar_shrinkage=shrinkWL,covar_se=covar_se,is.sim=is.sim,...) #Either use specified, or prune down as we
   option <- d$options; args <- d$args; hp <- d$hp; all_ids <- d$all_ids; names <- d$namesl; W_c <- d$W_c
@@ -791,6 +795,8 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", gwasmfiter =5,
 getBICMatricesGLMNET <- function(opath,option,X,W,W_c, all_ids, names, ...)
 {
 
+  message("")
+  message("------------------------------ GLEANR MODEL SELECTION STEP ------------------------------")
   if(option$K == "GRID")
   {
     message("Grid search")

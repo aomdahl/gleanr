@@ -172,8 +172,6 @@ DropFactorsByFit <- function(X,W,W_c,U,V, maxK, option, calc.param="obj", scalar
     return(list("U"=U, "V" = V, "K" = ncol(V)))
   }
 }
-#Beta test function- can we pick out the best factors by how they contribute (or don't) to the objective?
-#This will balance in sparsity better than PVE does.
 #' A recursive function to drop factors that by so doing improve (that is, reduce) the overall objective
 #'
 #' @param X full data matrix
@@ -255,10 +253,8 @@ DropFactorsByObjective <- function(X,W,W_c,U,V, maxK, option, minK = 0, scalar =
     return(list("U"=U, "V" = V, "K" = ncol(V)))
   }else
   {
-    message("Dropping factor: ", min.index)
-    message("Min.obj:", min.obj)
-    message("original obj:", init.obj)
-
+    userMessage(option$verbosity,
+                paste0("Dropping factor: ", min.index, ", which reduces the objective function from ", round(init.obj, digits = 4), " to ", round(min.obj, digits=4)))
     return(DropFactorsByObjective(X,W,W_c,U[,-min.index],V[,-min.index], maxK, option, minK=minK))
   }
 }

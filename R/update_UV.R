@@ -184,7 +184,7 @@ initV <- function(X,W,W_c,option, preV = NULL, rg_ref = NULL)
       #Reintroduced later- no problems here, and gives a nice speedup I think.
       if(option$svd_init)
       {
-        message("initializing with SVD")
+        userMessage(option$verbosity, "Initializing GLEANR with singular values of input Betas")
         V <- svd.dat$v[,1:(setK-1)]
         #V <- svd$u[,2:(option$K)]
       } #otherwise its random.
@@ -240,7 +240,7 @@ initU <- function(X,W,option, prevU = NULL)
     ones = rep(1, nsnps)
 
   }	else if(option$u_init == 'ones_eigenvect') {
-    userMessage(option$verbosity, "1st column based on direction of svd of cor")
+    userMessage(option$verbosity, "1st column based on direction of 1st SV of cor(X)")
     cor_struct <- cor2(t(X))
     svd <- irlba::irlba(cor_struct, 1) #fortunately its symmetric, so  U and V are the same here!
     ones <- sign(svd$u)

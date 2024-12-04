@@ -277,7 +277,7 @@ SpecifyWeightingScheme <- function(effects, all_ids,all_phenos, args)
       dplyr::filter(unlist(.[,1]) %in% all_ids) %>% quickSort(.,args)
     stopifnot(all(all_ids == W_se[,1]))
     W_se <- W_se[,-1] %>% orderColumnsByName(., all_phenos, force.ref = args$trait_names)
-    userMessage(args$verbosity, paste0("Dims of W_se are now:", nrow(W_se), " x ", ncol(W_se)))
+    userMessage(args$verbosity, paste0("Dims of W_se are now: ", nrow(W_se), " x ", ncol(W_se)))
     W <- 1/ W_se
     X <- effects
 
@@ -563,8 +563,7 @@ selectInitK <- function(args,X_, evals = NULL)
   #if(is.numeric(args$K) & args$K !=0)
   if(args$K %in% paste(1:ncol(X_)))
   {
-    message("User has specified a number of factors initially- this will be given preference.")
-    message("No selection method will be used.")
+    message("Using the specified number of factors for initialization,", args$K)
     return(as.numeric(args$K))
   } else
   {
@@ -649,8 +648,8 @@ readInSettings <- function(args)
   option$swap <- FALSE
   option$bic.var <- args$bic_var
   option$svd_init <- args$svd_init
-  message("Standardizing y by default")
-  option$std_y <- TRUE # args$std_y
+  userMessage(args$verbosity, "Standardizing explanatory variables (W_c(W_s*B)^T) by default")
+  option$std_y <- TRUE #Standardizing explanatory variables (W_c(W_s*B)^T) by default
   option$param_conv_criteria <- args$param_conv_criteria
   option$min.bicsearch.iter <- args$min.bic.search.iter
   #Internal use only:
