@@ -493,6 +493,7 @@ SampleOverlapCovarHandler <- function(args, names, X)
     message("Consider threshold these to < 1")
   }
   #If we are scaling by the sample standard deviation, assuming we use LDSC input
+  sd.scaling = 1
   if(args$sample_sd != "")
   {
     message("Note to user: Verify that the input trait order in the file containing estimates of SD for each study corresponds to the order of GWAS in B and S.")
