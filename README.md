@@ -18,10 +18,10 @@ Our approach was inspired by work from Yuan He [here](https://github.com/heyuan7
 Development of tutorials/vignettes for `gleanr` are ongoing. For a basic interactive use case in `R`, see the [vignette associated with this package](https://github.com/aomdahl/gleanr/blob/main/vignettes/gleanr-basic.Rmd). If you'd like to run `gleanr` directly from the command line (our recommended use), use the script `src/gleaner_run.R` available in the [gleanr_workflow repository](https://github.com/aomdahl/gleanr_workflow) after installing this package to run analysis directly on input matrices of summary statistics.
 ### GLEANR inputs:
 To run GLEANR, a user must provide: 
-  - a matrix $\Beta$ of $N$ SNPs by $M$ studies of GWAS effect sizes (e.g. $\beta$'s) (required)
-  - an $N\timesM$ matrix of GWAS standard error estimates, with the same order as $\Beta$ (required)
-  - an $M\timesM$ matrix of estimated correlation due to sample sharing ($C$); this may be estimated using LDSC and should have  (optional)
-  - an $N\timesM$ matrix  of esitmation error correlation due to sample sharing; this will be used to regularize $C$ (optional)
+  - a matrix $B$ of $N$ SNPs by $M$ studies of GWAS effect sizes (e.g. $\beta$'s) (required)
+  - an $N \times M$ matrix of GWAS standard error estimates, with the same order as $B$ (required)
+  - an $M \times M$ matrix of estimated correlation due to sample sharing ($C$); this may be estimated using LDSC and should have  (optional)
+  - an $N \times M$ matrix  of esitmation error correlation due to sample sharing; this will be used to regularize $C$ (optional)
   - a list of trait names corresponding to $M$ (required)
 
 ## Development versions of gleanr (preceeding Nov 2024)
