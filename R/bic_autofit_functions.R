@@ -724,7 +724,7 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", covar_se=NULL,
   option <- d$options; args <- d$args; hp <- d$hp; all_ids <- d$all_ids; names <- d$namesl; W_c <- d$W_c
   if(is.sim)
   {
-    option$Kmin <- K
+    option$Kmin <- K #need to adjust this naming scheme, a bit confusing.
     option$bic.var="sklearn_eBIC"
     option$K <- "GRID"
   }
