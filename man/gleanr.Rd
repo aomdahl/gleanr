@@ -19,6 +19,7 @@ gleanr(
   save.path = "",
   scale.mats = FALSE,
   regression.method = "glmnet",
+  save_out = TRUE,
   shrinkWL = -1,
   ...
 )

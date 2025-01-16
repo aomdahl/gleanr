@@ -16,6 +16,7 @@ initializeGLEANR(
   enforce_blocks = TRUE,
   covar_se = NULL,
   is.sim = FALSE,
+  save_out = TRUE,
   ...
 )
 }
@@ -43,6 +44,8 @@ initializeGLEANR(
 \item{enforce_blocks}{Force the matrix to be block matrix, default TRUE}
 
 \item{covar_se}{Matrix of standard errors corresponding to C. Used for shrinkage. If given, covar_shrinkage defaults to "STRIMMER"}
+
+\item{save_out}{Setting to save out intermediate files. Default is true.}
 
 \item{...}{}
 
