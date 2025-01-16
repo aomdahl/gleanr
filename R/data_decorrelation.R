@@ -126,6 +126,16 @@ buildWhiteningMatrix<- function(covar, dim, blockify = 0.2,...)
 #If this is null, no change made
 #whitener- don't calculate the whitening transofrm new, assume its been done already.
 #adjustMatrixAsNeeded(diag(w) %*% X, decorrelate, whitener = precalc.U)
+#' Whitens an input data matrix according to the covariance matrix input
+#'
+#' @param X - N x M matrix of affects to "decorrelate"
+#' @param covar - covarnace matrix (M x M) with structure we are decorrelating for
+#' @param whitener - optional argument, an M x M matrix used to transform the data (from buildWhiteningMatrix)
+#'
+#' @return the decorrelated X
+#' @export
+#'
+#' @examples
 adjustMatrixAsNeeded <- function(X, covar, whitener = NULL)
 {
   X <- as.matrix(X)
