@@ -19,33 +19,6 @@ FrobScale <- function(m)
   s <- Matrix::norm(m, type = "F")
   return(list("m.scaled" =m / s, "s"=s))
 }
-
-##Autofiting scripts
-### MAP estimation approach
-#4/4 observation- the problem here is that one might start to go up, pusing all the sparsity into the other one.
-MAPfitLambda <- function(matin, dim, option)
-{
-  if(dim == 1){
-    return(singleDimMAPFit(matin, option$max_lambda, option$lambda1))
-  }else if(dim == 0){
-    return(singleDimDropMAPFit(matin, option$max_lambda, option$lambda1))
-  }
-  else{
-    print("Not yet implemented")
-  }
-}
-
-MAPfitAlpha <- function(matin, dim, option)
-{
-  if(dim == 1){
-    return(singleDimMAPFit(matin, option$max_alpha, option$alpha1))
- }else if(dim == 0){
-    return(singleDimDropMAPFit(matin, option$max_alpha, option$alpha1))
-  }
-  else{
-    print("Not yet implemented")
-  }
-}
   #modified to control past going down into
   #this is going to the minimum at each update
   #not sure if this is the best way to do it; an alternative would be to step along the gradient, as in
@@ -328,255 +301,6 @@ sparsityParamsF <- function(Z, L, option){
 }
 
 
-
-#Range recommender function. The workhorse that suggests the max
-# Code was yanked from penalized
-#@param response: the response variable
-#@param penalized- which variables have weights on them
-#@param unpenalized- which have no weights on them
-
-
-recommendRange <- function (response, penalized, unpenalized, lambda1 = 100, lambda2 = 0, data,  startbeta, startgamma,
-                         steps = 1, epsilon = 1e-10, maxiter, positive = FALSE, params= option)
-{
-  if(params$regression_method == "penalized")
-  {
-    trace <- FALSE
-    standardize <- FALSE
-    park <- FALSE
-    steps = 100
-    fusedl = FALSE
-    if (missing(maxiter))
-      maxiter <- if (lambda1 == 0 && lambda2 == 0 && !positive)
-        25
-    else Inf
-    prep <- penalized:::.checkinput(match.call(), parent.frame())
-    if (ncol(prep$X) >= nrow(prep$X) && all(lambda1 == 0) &&
-        all(lambda2 == 0) && !any(prep$positive))
-      stop("High-dimensional data require a penalized model. Please supply lambda1 or lambda2.",
-          call. = FALSE)
-    fit <- penalized:::.modelswitch(prep$model, prep$response, prep$offset,
-                                    prep$strata)$fit
-    pu <- length(prep$nullgamma)
-    pp <- ncol(prep$X) - pu
-    n <- nrow(prep$X)
-    nr <- nrow(prep$X)
-    fusedl <- prep$fusedl
-    if (length(lambda1) == pp && (!all(lambda1 == 0))) {
-      wl1 <- c(numeric(pu), lambda1)
-      lambda1 <- 1
-    }
-    else {
-      wl1 <- 1
-    }
-
-    if (park || steps > 1 && fusedl == FALSE) {
-      if (pu > 0)
-        lp <- drop(prep$X[, 1:pu, drop = FALSE] %*% prep$nullgamma)
-      else lp <- numeric(n)
-      chck <- (wl1 > 0) & c(rep(FALSE, pu), rep(TRUE, pp))
-      gradient <- drop(crossprod(prep$X[, chck, drop = FALSE],
-                                fit(lp)$residuals))
-      if (length(wl1) > 1) {
-        rel <- gradient/(wl1[chck] * prep$baselambda1[chck])
-      }
-      else {
-        rel <- gradient/(wl1 * prep$baselambda1[chck])
-      }
-      from <- max(ifelse(prep$positive[chck], rel, abs(rel)))
-    }
-    return(from)
-  }
-  if(params$regression_method == "glmnet")
-  {
-    #TODO test and debug this
-    #simply run it once with no labmda specified and get the
-    penalties <- c(0, rep(1, (ncol(penalized) - 1)))
-    r <- glmnet(x = penalized, y = data[,1], alpha = 1,
-                    intercept = FALSE, penalty.factor = penalties)$lambda
-     return(r[1])
-  }
-}
-
-
-
-#Helper function for looking ath teguts of the penalized function.
-#copied from their code base
-penalizedDEBUG <- function (response, penalized, unpenalized, lambda1 = 0, lambda2 = 0,
-                            positive = FALSE, data, fusedl = FALSE, model = c("cox",
-                                                                              "logistic", "linear", "poisson"), startbeta, startgamma,
-                            steps = 1, epsilon = 1e-10, maxiter, standardize = FALSE,
-                            trace = FALSE)
-{
-  message("here")
-  if (missing(maxiter))
-    maxiter <- if (lambda1 == 0 && lambda2 == 0 && !positive)
-      25
-  else Inf
-  if (steps == "Park" || steps == "park") {
-    steps <- 1
-    park <- TRUE
-  }
-  else park <- FALSE
-  prep <- penalized:::.checkinput(match.call(), parent.frame())
-  if (ncol(prep$X) >= nrow(prep$X) && all(lambda1 == 0) &&
-      all(lambda2 == 0) && !any(prep$positive))
-    stop("High-dimensional data require a penalized model. Please supply lambda1 or lambda2.",
-         call. = FALSE)
-  fit <- penalized:::.modelswitch(prep$model, prep$response, prep$offset,
-                                  prep$strata)$fit
-  pu <- length(prep$nullgamma)
-  pp <- ncol(prep$X) - pu
-  n <- nrow(prep$X)
-  nr <- nrow(prep$X)
-  fusedl <- prep$fusedl
-  if (length(lambda1) == pp && (!all(lambda1 == 0))) {
-    wl1 <- c(numeric(pu), lambda1)
-    lambda1 <- 1
-  }
-  else {
-    wl1 <- 1
-  }
-  if (length(lambda2) == pp)
-    lambda2 <- c(numeric(pu), lambda2)
-  print(park)
-  print(steps)
-  if (park || steps > 1 && fusedl == FALSE) {
-    if (pu > 0)
-      lp <- drop(prep$X[, 1:pu, drop = FALSE] %*% prep$nullgamma)
-    else lp <- numeric(n)
-    chck <- (wl1 > 0) & c(rep(FALSE, pu), rep(TRUE, pp))
-    gradient <- drop(crossprod(prep$X[, chck, drop = FALSE],
-                               fit(lp)$residuals))
-    print(gradient)
-    if (length(wl1) > 1) {
-      rel <- gradient/(wl1[chck] * prep$baselambda1[chck])
-    }
-    else {
-      rel <- gradient/(wl1 * prep$baselambda1[chck])
-    }
-    from <- max(ifelse(prep$positive[chck], rel, abs(rel)))
-    message("Max is:")
-    message(from)
-    #readline()
-    if (from < lambda1) {
-      warning("Chosen lambda1 greater than maximal lambda1: \"steps\" argument ignored")
-      steps <- 1
-      park <- FALSE
-      from <- lambda1
-    }
-  }
-  else {
-    message("didn't go...")
-    from <- lambda1
-  }
-  print(lambda1)
-  print(from)
-  message("here?")
-  lambda1s <- seq(from, lambda1, length.out = steps)
-  beta <- prep$beta
-  louts <- if (park)
-    4 * pp
-  else length(lambda1s)
-  outs <- vector("list", louts)
-  rellambda1 <- lambda1s[1]
-  ready <- FALSE
-  i <- 0
-  while (!ready) {
-    ready <- (rellambda1 == lambda1)
-    i <- i + 1
-    if (!fusedl) {
-      if (rellambda1 != 0 || any(prep$positive)) {
-        if (all(lambda2 == 0)) {
-          out <- penalized:::.steplasso(beta = beta, lambda = rellambda1 *
-                                          wl1 * prep$baselambda1, lambda2 = 0, positive = prep$positive,
-                                        X = prep$X, fit = fit, trace = trace, epsilon = epsilon,
-                                        maxiter = maxiter)
-        }
-        else {
-          out <-  penalized:::.lasso(beta = beta, lambda = rellambda1 *
-                                       wl1 * prep$baselambda1, lambda2 = lambda2 *
-                                       prep$baselambda2, positive = prep$positive,
-                                     X = prep$X, fit = fit, trace = trace, epsilon = epsilon,
-                                     maxiter = maxiter)
-        }
-      }
-      else {
-        if (pp > n) {
-          P <-  penalized:::.makeP(prep$X, lambda2 * prep$baselambda2)
-          gams <-  penalized:::.solve(crossprod(t(P)), P %*% beta)
-          PX <- P %*% t(prep$X)
-          Pl <- P * matrix(sqrt(lambda2 * prep$baselambda2),
-                           nrow(P), ncol(P), byrow = TRUE)
-          PlP <- crossprod(t(Pl))
-          out <-  penalized:::.ridge(beta = gams, Lambda = PlP, X = t(PX),
-                                     fit = fit, trace = trace, epsilon = epsilon,
-                                     maxiter = maxiter)
-          out$beta <- drop(crossprod(P, out$beta))
-        }
-        else {
-          out <-  penalized:::.ridge(beta = beta, Lambda = lambda2 *
-                                       prep$baselambda2, X = prep$X, fit = fit,
-                                     trace = trace, epsilon = epsilon, maxiter = maxiter)
-        }
-      }
-    }
-    if (fusedl) {
-      out <-  penalized:::.flasso(beta = beta, lambda1 = rellambda1 *
-                                    wl1 * prep$baselambda1, lambda2 = lambda2 * prep$baselambda2,
-                                  chr = prep$chr, positive = prep$positive, X = prep$X,
-                                  fit = fit, trace = trace, epsilon = epsilon,
-                                  maxiter = maxiter)
-    }
-    if (trace)
-      cat("\n")
-    beta <- out$beta
-    if (!ready) {
-      if (!fusedl) {
-        if (park) {
-          newpark <-  penalized:::.park(beta = beta, lambda = rellambda1 *
-                                          wl1 * prep$baselambda1, lambda2 = 0, positive = prep$positive,
-                                        X = prep$X, fit = out$fit)
-          rellambda1 <- rellambda1 * (1 - newpark$hh)
-          if (rellambda1 < lambda1 || rellambda1 == Inf) {
-            rellambda1 <- lambda1
-            beta <- out$beta
-          }
-          else {
-            beta <- newpark$beta
-          }
-          lambda1s <- c(lambda1s, rellambda1)
-        }
-        else {
-          rellambda1 <- lambda1s[i + 1]
-          beta <- out$beta
-        }
-      }
-      else {
-        rellambda1 <- lambda1s[i + 1]
-        beta <- out$beta
-      }
-    }
-    outs[[i]] <- out
-  }
-  if (length(lambda2) > 1)
-    lambda2 <- lambda2[pu + 1:pp]
-  outs <- sapply(1:i, function(nr) {
-    thislambda1 <- lambda1s[[nr]] * ifelse(length(wl1) >
-                                             1, wl1[pu + 1:pp], wl1)
-    penalized:::.makepenfit(outs[[nr]], pu, fusedl = fusedl, prep$model,
-                            thislambda1, lambda2, prep$orthogonalizer, prep$weights,
-                            prep$formula, rownames(prep$X))
-  })
-  if (length(outs) == 1)
-    outs <- outs[[1]]
-  outs
-}
-
-
-
-
-
 #Copied over from Yuan:
 nonEmpty <- function(v,u, iter =0 ){
 	#must be empty in both u and v
@@ -613,6 +337,17 @@ nonEmptyAvg <- function(v,u){
 
 
 
+#' Calculate the proportion of empty cells in a matrix
+#'
+#' @param m matrix to estimate sparsity of
+#' @param initK inital K, if the matrix is a sub-matrix (e.g. via dropped columns)
+#' @param thresh threshold for counting sparsity
+#' @param wrt.init if you want sparsity with respect to full inintal size of matrix (e.g. N x K)
+#'
+#' @return Proportion of cells with absolute values below threshold
+#' @export
+#'
+#' @examples
 matrixSparsity <- function(m, initK, thresh = 0, wrt.init = FALSE)
 {
   #I don't think this is the right way to calc it..
@@ -640,6 +375,7 @@ getColScales <- function(matin)
 {
   apply(matin,2,function(x) norm(x, "2"))
 }
+
 unitScaleColumns <- function(matin, colnorms = NA)
 {
   #see https://stats.stackexchange.com/questions/8605/column-wise-matrix-normalization-in-r for speed options.
