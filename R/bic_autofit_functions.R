@@ -746,7 +746,7 @@ gleanr <- function(X,W, snp.ids, trait.names, C = NULL, K="GRID", covar_se=NULL,
   }
   if(is.sim & option$save_out)
   {
-    save(bic.dat, file = paste0(save.path, "bic.RData"))
+    save(W_c, bic.dat, file = paste0(save.path, "bic.RData"))
   }
   if(is.null(bic.dat$K) | is.na(bic.dat$alpha) | all(bic.dat$optimal.v == 0) | is.na(bic.dat$K))
   {
