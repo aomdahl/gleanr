@@ -694,7 +694,7 @@ readInSettings <- function(args)
 #####
 ## Setting defaults helpful for running elsewhere
 
-defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objective = 0.001,min_bic_search_iter=5, is_sim=FALSE,verbosity=1 )
+defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objective = 0.001,min_bic_search_iter=5, is_sim=FALSE,verbosity=1, covar_shrinkage=-1 )
 {
   args <- defaultInteractiveArgs()
   args$niter <- 200
@@ -717,6 +717,7 @@ defaultSettings <- function(K=0, init.mat = "V", fixed_ubiq= TRUE, conv_objectiv
     args$init_U <- "std"
   }
   args$fixed_first <- fixed_ubiq #trying to see if this help- IT DOENS'T really appear to matter very much.
+  args$WLgamma <-covar_shrinkage #Added jan 28, for some reason this was missing.
   args
 }
 

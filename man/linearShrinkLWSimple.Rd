@@ -9,7 +9,7 @@ linearShrinkLWSimple(sample_cov_mat, gamma)
 \arguments{
 \item{sample_cov_mat}{the input covariance matrix used, from LDSC}
 
-\item{gamma}{the setting at which to run this}
+\item{gamma}{the degree of shrinkage to apply. 0 means no shrinkage, 1 means complete shrinkage.}
 }
 \value{
 shrunk estimate

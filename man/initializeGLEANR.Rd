@@ -39,7 +39,7 @@ initializeGLEANR(
 \item specify a K if you would like.
 }}
 
-\item{covar_shrinkage}{Degree of shrinkage towards the identity. matrix to apply to C (0 means none, 1 means perfect shrhinkage.) If covar_se is not NULL, defaults to the variance based (Strimmer) approach}
+\item{covar_shrinkage}{Degree of shrinkage towards the identity. matrix to apply to C (0 means none, 1 means perfect shrhinkage.) If covar_se is not NULL or -1, defaults to the variance based (Strimmer) approach}
 
 \item{enforce_blocks}{Force the matrix to be block matrix, default TRUE}
 

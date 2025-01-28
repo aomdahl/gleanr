@@ -370,7 +370,7 @@ DropEmptyColumnsPipe <- function(lin,options)
 #' @param trait.names - trait names to use, corresponds to order in X
 #' @param K - specify a K if you would like.
 #' @param init.mat- which matrix to initialize to
-#' @param covar_shrinkage Degree of shrinkage towards the identity. matrix to apply to C (0 means none, 1 means perfect shrhinkage.) If covar_se is not NULL, defaults to the variance based (Strimmer) approach
+#' @param covar_shrinkage Degree of shrinkage towards the identity. matrix to apply to C (0 means none, 1 means perfect shrhinkage.) If covar_se is not NULL or -1, defaults to the variance based (Strimmer) approach
 #' @param enforce_blocks Force the matrix to be block matrix, default TRUE
 #' @param covar_se Matrix of standard errors corresponding to C. Used for shrinkage. If given, covar_shrinkage defaults to "STRIMMER"
 #' @param save_out Setting to save out intermediate files. Default is true.
@@ -392,7 +392,7 @@ initializeGLEANR <- function(X,W,C,snp.ids, trait.names, K=0, init.mat = "V", co
   {
     warning("Columns of standard errors contain no variance. May not be valid")
   }
-  args <- defaultSettings(K=K,init.mat = init.mat,is_sim=is.sim,...)
+  args <- defaultSettings(K=K,init.mat = init.mat,is_sim=is.sim,covar_shrinkage=covar_shrinkage,...)
   args$pve_init <- FALSE
   option <- readInSettings(args)
   option$swap <- FALSE
