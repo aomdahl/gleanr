@@ -555,7 +555,16 @@ update_UV <- function(X, W, W_c, option, preV = NULL, preU = NULL, burn.in = FAL
   U <- U.dat$U
   option[['carry_coeffs']] <- og_option
 
+  #Special case for permutation analysis
+  if(option[['iter']] == 0.5)
+  {
+    message("Single matrix fit complete")
+    #return(tracking.data)
+    return(U.dat$U)
+  }
+
   tracking.data <- UpdateTrackingParams(NULL, X,W,W_c,U,V,option,scalar=U.dat$s) #multiplies everything by the scalar: #CONFIRM
+
 
   #If U is already empty, than we know that the matrix is too sparse, and we should just end there.
   if(CheckUEmpty(U)) {message("U is empty; ending");return(tracking.data)}

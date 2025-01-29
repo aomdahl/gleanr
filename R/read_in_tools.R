@@ -850,6 +850,8 @@ fillDefaultSettings <- function(curr.args)
   curr.args$simulation <- FALSE
   curr.args$std_y <- TRUE #Updated from FALSE, 12/04
   #TODO: add some checks for missing or cnflicing parameters
+  if(is.null(curr.args$rg_ref)) {curr.args$rg_ref <- ""}
+  if(is.null(curr.args$ncores)) {curr.args$ncores <- 1}
   curr.args
 }
 
