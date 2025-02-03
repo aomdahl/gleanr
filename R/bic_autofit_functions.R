@@ -838,7 +838,7 @@ getBICWorkhorse <- function(opath,option,X,W,W_c, all_ids, names, min.iter = 5, 
   if(option$bic.var == "NONE") #This is no longer used- tweaking settings on the variance in BIC since there isn't agreement on this in practice
     {
       return(list("optimal.v" = burn.in.sparsity$V_burn,"resid.var" = NA,
-                  "rec.dat" = rec.dat, "lambda"=1e-20, "alpha"=1e-20, "options" = option,
+                  "rec.dat" = rec.dat, "lambda"=option$lambda1, "alpha"=option$alpha1, "options" = option,
                   "K"= burn.in.sparsity$new.k, "alpha.path" = NA, "lambda.path" = NA, "optimal.u" = NA, "convergence.options" = NA))
       #We don't need U passed in unless it is request to innitialize U, but not considering for th emoment.
     }
