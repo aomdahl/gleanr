@@ -45,6 +45,12 @@ PruneNumberOfFactors <- function(X,W,W_c,reg.run, minK, maxK, option)
     return(reg.run)
     #quit()
   }
+  if(ncol(reg.run$V) ==0 | all(reg.run$V == 0))
+  {
+    message("Edge case fixed.")
+    return(reg.run)
+  }
+
 
   ret.dat <- reg.run
   r <- DropFactorsByObjective(X,W,W_c,ret.dat$U,ret.dat$V, maxK, option, minK = minK, scalar = ret.dat$final.scaling) #want it to be framed at 5, for now.
@@ -189,6 +195,10 @@ DropFactorsByFit <- function(X,W,W_c,U,V, maxK, option, calc.param="obj", scalar
 DropFactorsByObjective <- function(X,W,W_c,U,V, maxK, option, minK = 0, scalar = 1)
 {
 
+  if(all(U == 0) | all(V == 0))
+  {
+      return(list("U"=U, "V" = V, "K" = ncol(V)))
+  }
   if(is.null(maxK) | length(maxK) == 0)
   {
     maxK = ncol(X) - 1
@@ -278,7 +288,7 @@ PruneFactorsByObjective <- function(X,W,U,V, minK, option)
 OrderEverythingByPVE <- function(ret,X,W,W_c,options,terminal.attempt = FALSE,...)
 {
   return.dat <- ret
-  if(all(ret$V == 0) | all(ret$U == 0))
+  if(all(ret$V == 0) | all(ret$U == 0) | ncol(ret$V) == 0)
   {
 	  message("returned matrices empty,no reorder will be performed.")
 	  return(ret)

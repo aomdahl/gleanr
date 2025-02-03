@@ -668,6 +668,11 @@ gwasML_ALS_Routine <- function(option, X, W,W_c, optimal.init, maxK=0, opath = "
   userMessage(option$verbosity, paste0("Starting at k:", option$K))
   option$debug <- TRUE
   reg.run <- update_UV(X, W, W_c, option, preV = optimal.init, reg.elements =reg.elements,... )
+  #Check for the edge cases
+  if(ncol(reg.run$U) == 0 | ncol(reg.run$V) == 0 | all(reg.run$U == 0) | all(reg.run$V == 0))
+  {
+    warning("One of the matrices was totally empty. When reviewing output, be sure to examine both matrices.")
+  }
   if(no.prune){return(reg.run)}
   if(maxK != 0)
   {

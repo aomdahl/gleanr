@@ -268,9 +268,10 @@ UpdateTrackingParams <- function(sto.obj, X,W,W_c,U,V,option, sparsity.thresh = 
 {
   if(is.null(sto.obj))
   {
+    #NEWLY added scalar term....
     sto.obj <-  list("V" = V, "U" = U, "initK" = option$K, "K" = ncol(U), "obj" = c(NA), "obj_change" = c(),
                      "V_sparsities" = c(), "U_sparsities" = c(), "autofit_lambda" = c(), "autofit_alpha"=c(), "mse" = c(),
-                     "V_change" = c(), "U_change" = c(), "decomp_obj" ="", "model.loglik" = c(), "Vs"=list(), "Us"=list())
+                     "V_change" = c(), "U_change" = c(), "decomp_obj" ="", "model.loglik" = c(), "Vs"=list(), "Us"=list(),"final.scaling"=scalar)
   }
     # collect sparsity in L and F
   obj_updated = compute_obj(X, W,W_c, U, V, option, scalar=scalar)
