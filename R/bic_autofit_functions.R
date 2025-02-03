@@ -835,7 +835,7 @@ getBICWorkhorse <- function(opath,option,X,W,W_c, all_ids, names, min.iter = 5, 
   burn.in.sparsity <- DefineSparsitySpaceInit(X, W, W_c, NULL, option, burn.in = burn.in.iter, rg_ref = rg_ref,reg.elements=reg.elements) #If this finds one with NA, cut them out here, and reset K; we want to check pve here too.
   option$regression_method = "glmnet" #Just in case it wasn't set earlier
 
-  if(option$bic.var == "NONE") #This is no longer used- tweaking settings on the variance in BIC since there isn't agreement on this in practice
+  if(option$bic.var == "NONE") #This is used if you specify your custom lambda/alpha, but still want the initialized data out.
     {
       return(list("optimal.v" = burn.in.sparsity$V_burn,"resid.var" = NA,
                   "rec.dat" = rec.dat, "lambda"=option$lambda1, "alpha"=option$alpha1, "options" = option,
